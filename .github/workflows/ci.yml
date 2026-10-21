@@ -8,6 +8,9 @@ on:
     branches: [develop, main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -51,6 +54,9 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Needed to create the GitHub Release and upload the APK/AAB to it.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -70,10 +76,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
+      # The GitHub Ubuntu runner already ships the Android SDK ($ANDROID_HOME);
+      # only add the exact packages this app needs.
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973"
+          echo "NATIVEPHP_ANDROID_SDK_LOCATION=$ANDROID_HOME" >> "$GITHUB_ENV"
 
       - name: Prepare .env for the release
         env:
