@@ -70,10 +70,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
+      # The GitHub Ubuntu runner already ships the Android SDK ($ANDROID_HOME);
+      # only add the exact packages this app needs.
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973"
+          echo "NATIVEPHP_ANDROID_SDK_LOCATION=$ANDROID_HOME" >> "$GITHUB_ENV"
 
       - name: Prepare .env for the release
         env:
