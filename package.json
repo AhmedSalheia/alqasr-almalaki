@@ -1,0 +1,24 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "build:android": "vite build --mode=android"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.3.3",
+        "axios": "^1.20.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.1.0",
+        "tailwindcss": "^4.3.3",
+        "vite": "^7.3.7"
+    },
+    "dependencies": {
+        "@fontsource/cormorant-garamond": "^5.3.0",
+        "@fontsource/el-messiri": "^5.3.0",
+        "@fontsource/tajawal": "^5.3.0",
+        "html-to-image": "^1.11.13"
+    }
+}

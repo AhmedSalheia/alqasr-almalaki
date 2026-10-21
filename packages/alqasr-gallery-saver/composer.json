@@ -1,0 +1,26 @@
+{
+    "name": "alqasr/mobile-gallery-saver",
+    "description": "Tiny NativePHP Mobile plugin: save an image file into the phone's photo gallery (Pictures/<album>).",
+    "type": "nativephp-plugin",
+    "license": "MIT",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "nativephp/mobile": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alqasr\\GallerySaver\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Alqasr\\GallerySaver\\GallerySaverServiceProvider"
+            ]
+        },
+        "nativephp": {
+            "manifest": "nativephp.json"
+        }
+    }
+}

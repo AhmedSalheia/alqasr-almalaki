@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, sqlite3, pdo_sqlite, zip, curl, gd
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Run tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          php artisan test
+
+  android-release:
+    name: Android release (signed APK + AAB)
+    # Only for version tags, and only on GitHub (the Gitea mirror skips this heavy job).
+    if: startsWith(github.ref, 'refs/tags/v') && github.server_url == 'https://github.com'
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, sqlite3, pdo_sqlite, zip, curl, gd, dom, simplexml
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973"
+
+      - name: Prepare .env for the release
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: php scripts/ci-release-env.php
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+
+      - name: Build web assets for Android
+        run: npm run build:android
+
+      - name: Install NativePHP Android project
+        run: php artisan native:install android --no-interaction
+
+      - name: Restore signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p credentials
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > credentials/release.keystore
+
+      - name: Build signed APK
+        run: >
+          php artisan native:package android --build-type=release --no-tty --no-interaction
+          --keystore=credentials/release.keystore
+          --keystore-password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+          --key-alias="${{ secrets.ANDROID_KEY_ALIAS }}"
+          --key-password="${{ secrets.ANDROID_KEY_PASSWORD }}"
+          --output=dist
+
+      - name: Build signed AAB (Google Play)
+        run: >
+          php artisan native:package android --build-type=bundle --no-tty --no-interaction --skip-prepare
+          --keystore=credentials/release.keystore
+          --keystore-password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+          --key-alias="${{ secrets.ANDROID_KEY_ALIAS }}"
+          --key-password="${{ secrets.ANDROID_KEY_PASSWORD }}"
+          --output=dist
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p release
+          find dist nativephp/android/app/build/outputs -type f \( -name '*.apk' -o -name '*.aab' \) -exec cp {} release/ \;
+          cd release
+          for f in *; do mv "$f" "alqasr-calendar-${GITHUB_REF_NAME}-${f}"; done
+          ls -la
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alqasr-calendar-${{ github.ref_name }}
+          path: release/*
+
+      - name: Attach to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true

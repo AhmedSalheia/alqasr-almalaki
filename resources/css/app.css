@@ -1,0 +1,186 @@
+@import 'tailwindcss';
+
+/* Fonts are bundled with the app (works offline) */
+@import '@fontsource/tajawal/400.css';
+@import '@fontsource/tajawal/500.css';
+@import '@fontsource/tajawal/700.css';
+@import '@fontsource/el-messiri/500.css';
+@import '@fontsource/el-messiri/700.css';
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/700.css';
+
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../app/**/*.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant keyboard-visible (&:where(body.keyboard-visible *));
+
+@theme {
+    /* Brand palette — sampled from the Al Qasr Al Malaki logo */
+    --color-gold-50: #fdf8ec;
+    --color-gold-100: #f9ecc9;
+    --color-gold-200: #f3d88f;
+    --color-gold-300: #eec462;
+    --color-gold-400: #e9b03c;
+    --color-gold-500: #e09a15;
+    --color-gold-600: #c07c0c;
+    --color-gold-700: #9a5f0d;
+    --color-gold-800: #7c4b12;
+    --color-gold-900: #663e12;
+
+    --color-navy-50: #eef3f9;
+    --color-navy-100: #d6e0ee;
+    --color-navy-200: #aec1dc;
+    --color-navy-300: #7f9bc3;
+    --color-navy-400: #5677a6;
+    --color-navy-500: #3a5a88;
+    --color-navy-600: #2a446c;
+    --color-navy-700: #1f3455;
+    --color-navy-800: #15253f;
+    --color-navy-900: #0c1a2d;
+    --color-navy-950: #070f1c;
+
+    --color-ivory-50: #fffcf5;
+    --color-ivory-100: #fbf5e7;
+    --color-ivory-200: #f4e9cf;
+    --color-ivory-300: #eadbb5;
+
+    --font-sans: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'El Messiri', 'Cormorant Garamond', serif;
+    --font-latin: 'Cormorant Garamond', 'El Messiri', serif;
+
+    --radius-4xl: 2rem;
+}
+
+/* Semantic colours that flip with the theme */
+:root {
+    --app-bg: #fbf6ea;
+    --app-surface: #fffdf8;
+    --app-surface-2: #f6eedb;
+    --app-ink: #0c1a2d;
+    --app-ink-soft: #4a5a72;
+    --app-line: rgb(192 124 12 / 0.22);
+    --app-accent: #c07c0c;
+    color-scheme: light;
+}
+.dark {
+    --app-bg: #070f1c;
+    --app-surface: #0f1d33;
+    --app-surface-2: #15253f;
+    --app-ink: #f6eedc;
+    --app-ink-soft: #a9b6cb;
+    --app-line: rgb(233 176 60 / 0.22);
+    --app-accent: #e9b03c;
+    color-scheme: dark;
+}
+
+@theme inline {
+    --color-bg: var(--app-bg);
+    --color-surface: var(--app-surface);
+    --color-surface-2: var(--app-surface-2);
+    --color-ink: var(--app-ink);
+    --color-ink-soft: var(--app-ink-soft);
+    --color-line: var(--app-line);
+    --color-accent: var(--app-accent);
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+    }
+    body {
+        @apply bg-bg text-ink font-sans antialiased;
+        overscroll-behavior-y: none;
+    }
+    html[lang='en'] .font-display {
+        font-family: 'Cormorant Garamond', 'El Messiri', serif;
+    }
+    input, textarea, select, button {
+        font: inherit;
+    }
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+/* Arabesque lattice behind the app */
+.royal-backdrop {
+    background-color: var(--app-bg);
+    background-image:
+        radial-gradient(ellipse 120% 60% at 50% -10%, rgb(224 154 21 / 0.16), transparent 60%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23c07c0c' stroke-opacity='.09' stroke-width='1'%3E%3Cpath d='M28 4l7 17 17 7-17 7-7 17-7-17-17-7 17-7z'/%3E%3Ccircle cx='28' cy='28' r='5'/%3E%3C/g%3E%3C/svg%3E");
+}
+.dark .royal-backdrop {
+    background-image:
+        radial-gradient(ellipse 120% 60% at 50% -10%, rgb(224 154 21 / 0.14), transparent 60%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23e9b03c' stroke-opacity='.07' stroke-width='1'%3E%3Cpath d='M28 4l7 17 17 7-17 7-7 17-7-17-17-7 17-7z'/%3E%3Ccircle cx='28' cy='28' r='5'/%3E%3C/g%3E%3C/svg%3E");
+}
+.safe-top {
+    padding-top: max(var(--inset-top, 0px), env(safe-area-inset-top, 0px));
+}
+.safe-bottom {
+    padding-bottom: max(var(--inset-bottom, 0px), env(safe-area-inset-bottom, 0px));
+}
+
+@utility gold-text {
+    background: linear-gradient(100deg, #9a5f0d 0%, #e09a15 28%, #f3d88f 50%, #e09a15 72%, #9a5f0d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* keep Arabic dots/diacritics inside the painted (clipped) box */
+    padding-block: 0.12em;
+}
+@utility gold-fill {
+    background: linear-gradient(135deg, #f0c45a 0%, #e09a15 45%, #b97509 100%);
+}
+@utility gold-hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e09a15 20%, #f3d88f 50%, #e09a15 80%, transparent);
+}
+@utility panel {
+    @apply rounded-3xl border border-line bg-surface shadow-[0_12px_32px_-20px_rgb(12_26_45/0.45)] dark:shadow-[0_12px_32px_-18px_rgb(0_0_0/0.9)];
+}
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-[15px] font-bold transition select-none active:scale-[.98] disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-gold {
+    @apply btn gold-fill text-navy-950 shadow-[0_8px_20px_-8px_rgb(224_154_21/0.7)];
+}
+@utility btn-navy {
+    @apply btn bg-navy-900 text-ivory-50 dark:bg-ivory-100 dark:text-navy-900;
+}
+@utility btn-outline {
+    @apply btn border border-gold-500/50 bg-transparent text-accent;
+}
+@utility btn-ghost {
+    @apply btn text-ink-soft;
+}
+@utility btn-danger {
+    @apply btn border border-rose-500/30 bg-rose-600/10 text-rose-700 dark:text-rose-300;
+}
+@utility field-label {
+    @apply mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-ink-soft;
+}
+@utility field {
+    @apply w-full rounded-2xl border border-line bg-surface px-4 py-3 text-[16px] text-ink outline-none transition placeholder:text-ink-soft/50 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/15;
+}
+@utility field-error {
+    @apply mt-1.5 text-[13px] font-medium text-rose-600 dark:text-rose-300;
+}
+@utility chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] leading-none font-bold;
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+.animate-rise { animation: rise .35s ease-out both; }
+
+/* Cormorant uses old-style figures by default; dates & money read better with lining figures */
+.font-latin {
+    font-variant-numeric: lining-nums tabular-nums;
+}

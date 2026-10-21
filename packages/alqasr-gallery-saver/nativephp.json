@@ -1,0 +1,18 @@
+{
+    "namespace": "Gallery",
+    "bridge_functions": [
+        {
+            "name": "Gallery.SaveImage",
+            "android": "com.alqasr.gallerysaver.GalleryFunctions.SaveImage",
+            "description": "Copy an image file into the device photo gallery"
+        }
+    ],
+    "android": {
+        "min_version": 29,
+        "permissions": [],
+        "dependencies": {
+            "implementation": []
+        }
+    },
+    "events": []
+}

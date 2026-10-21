@@ -1,0 +1,26 @@
+{
+    "name": "alqasr/mobile-reminders",
+    "description": "NativePHP Mobile plugin: schedule local reminder notifications (Android WorkManager).",
+    "type": "nativephp-plugin",
+    "license": "MIT",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "nativephp/mobile": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alqasr\\Reminders\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Alqasr\\Reminders\\RemindersServiceProvider"
+            ]
+        },
+        "nativephp": {
+            "manifest": "nativephp.json"
+        }
+    }
+}
