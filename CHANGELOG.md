@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-10-21
+
+### Fixed
+- Event card "Download" and "Share" now work on Android: only the fonts the card uses are embedded (the WebView could not draw the full set), images are inlined before drawing, the PNG upload sends the CSRF token in the body, and the gallery plugin detects the phone correctly.
+- The Users and Devices screens no longer freeze the app while offline; Firebase calls fail fast for 20 seconds after a connection error and background sync skips the network when the phone reports it is offline.
+- Signing credentials (`ANDROID_KEYSTORE_*`, `ANDROID_KEY_*`) are no longer bundled into the app's `.env`.
+
+### Added
+- Clear error messages on the card toast, `[card]` / `[client]` entries in the app log, and `scripts/android-logs.ps1` to follow the phone's logs.
+- CI: the release job uses the runner's Android SDK and has permission to publish GitHub Releases.
+
 ## [1.0.0] - 2026-10-21
 
 ### Added

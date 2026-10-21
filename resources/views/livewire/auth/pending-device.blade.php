@@ -1,4 +1,4 @@
-<div class="animate-rise text-center" @if ($state === 'pending') wire:poll.6s="check" @endif>
+<div class="animate-rise text-center" @if ($state === 'pending') x-data="netPoll('check', 6, { immediate: false, onlyOnline: true })" @endif>
     <img src="{{ asset('images/emblem.png') }}" alt="" class="mx-auto w-32 dark:hidden">
     <img src="{{ asset('images/emblem-dark.png') }}" alt="" class="mx-auto hidden w-32 dark:block">
 

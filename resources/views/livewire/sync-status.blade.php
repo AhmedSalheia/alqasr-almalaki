@@ -1,9 +1,9 @@
-<div wire:poll.{{ $interval }}s.keep-alive="tick" wire:init="tick" class="shrink-0">
+<div x-data="netPoll('tick', {{ $interval }})" @offline.window="$wire.tick(false)" class="shrink-0">
     @php
         $online = $status['online'];
         $pending = $status['pending'];
     @endphp
-    <button type="button" wire:click="syncNow" wire:loading.attr="disabled" wire:target="syncNow"
+    <button type="button" x-on:click="$wire.syncNow(navigator.onLine)" wire:loading.attr="disabled" wire:target="syncNow"
             class="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-bold text-ink-soft active:scale-95"
             title="{{ $status['last_success_at'] ? __('app.last_sync', ['time' => \App\Support\Format::relative($status['last_success_at'])]) : '' }}">
         <span wire:loading.remove wire:target="syncNow" class="flex items-center gap-1.5">

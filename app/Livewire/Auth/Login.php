@@ -18,7 +18,7 @@ class Login extends Component
 
     public ?string $error = null;
 
-    public function submit(AuthService $auth, SyncScheduler $scheduler)
+    public function submit(AuthService $auth, SyncScheduler $scheduler, bool $online = true)
     {
         $this->validate([
             'login' => ['required', 'string', 'max:190'],
@@ -29,6 +29,13 @@ class Login extends Component
         ]);
 
         $this->error = null;
+
+        if (! $online) {
+            $this->error = __('access.errors.offline');
+
+            return null;
+        }
+        \App\Services\Firebase\FirebaseClient::markOnline(); // explicit sign in: try right away
 
         try {
             $status = $auth->login($this->login, $this->password);

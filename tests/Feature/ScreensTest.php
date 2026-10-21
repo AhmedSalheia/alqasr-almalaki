@@ -104,9 +104,27 @@ class ScreensTest extends TestCase
         $this->signIn();
         $e = Event::create(['groom_name' => 'Omar', 'date' => '2026-12-24', 'start_time' => '19:00']);
 
-        $png = UploadedFile::fake()->image('card.png', 1080, 1350);
+        $png = UploadedFile::fake()->createWithContent('card.png', "\x89PNG\r\n\x1a\n".str_repeat("\0", 64));
         $this->postJson(route('events.card', $e), ['card' => $png, 'action' => 'save'])
             ->assertOk()->assertJson(['ok' => true, 'mode' => 'browser']);
+    }
+
+    public function test_card_upload_as_base64_fallback(): void
+    {
+        $this->signIn();
+        $e = Event::create(['groom_name' => 'Omar', 'date' => '2026-12-24', 'start_time' => '19:00']);
+        $png = base64_encode("\x89PNG\r\n\x1a\n".str_repeat("\0", 64));
+
+        $this->postJson(route('events.card', $e), ['card_base64' => 'data:image/png;base64,'.$png, 'action' => 'share'])
+            ->assertOk()->assertJson(['ok' => true, 'mode' => 'browser']);
+
+        $this->postJson(route('events.card', $e), ['action' => 'save'])
+            ->assertStatus(422)->assertJson(['retry_base64' => true]);
+
+        $this->postJson(route('events.card', $e), ['card_base64' => base64_encode('not a png')])
+            ->assertStatus(422);
+
+        $this->postJson(route('client-log'), ['stage' => 'render', 'message' => 'boom'])->assertNoContent();
     }
 
     public function test_financial_totals_are_admin_only(): void
