@@ -1,4 +1,4 @@
-<div class="space-y-4" wire:init="load" wire:poll.20s="load">
+<div class="space-y-4" x-data="netPoll('load', 20)">
     <div>
         <h1 class="font-display text-[24px] font-bold gold-text">{{ __('admin.requests_title') }}</h1>
         <p class="text-[13px] text-ink-soft">{{ __('admin.requests_sub') }}</p>

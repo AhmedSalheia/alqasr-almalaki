@@ -6,7 +6,7 @@
         <div class="gold-hairline mx-auto mt-3 w-40"></div>
     </div>
 
-    <form wire:submit="submit" class="panel mt-6 space-y-4 p-5">
+    <form x-on:submit.prevent="$wire.submit(navigator.onLine)" class="panel mt-6 space-y-4 p-5">
         @if ($error)
             <div class="flex items-start gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-3 text-[14px] font-medium text-rose-700 dark:text-rose-200">
                 <x-icon name="alert" class="mt-0.5 size-4 shrink-0" />{{ $error }}

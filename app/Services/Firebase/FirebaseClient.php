@@ -25,7 +25,7 @@ class FirebaseClient
         protected ?string $apiKey,
         protected ?string $projectId,
         protected string $databaseId = '(default)',
-        protected int $connectTimeout = 4,
+        protected int $connectTimeout = 3,
         protected int $timeout = 10,
     ) {}
 
@@ -194,8 +194,31 @@ class FirebaseClient
 
     // -------------------------------------------------------------- Internals
 
+    /** Seconds to skip network calls after a connection failure (keeps offline screens snappy). */
+    public const OFFLINE_BACKOFF = 20;
+
+    public static function markOffline(int $seconds = self::OFFLINE_BACKOFF): void
+    {
+        \App\Models\AppState::put('net.offline_until', time() + $seconds);
+    }
+
+    public static function markOnline(): void
+    {
+        \App\Models\AppState::forget('net.offline_until');
+    }
+
+    public static function recentlyOffline(): bool
+    {
+        return (int) \App\Models\AppState::get('net.offline_until', 0) > time();
+    }
+
     protected function send(callable $call): array
     {
+        // We just failed to reach the network: fail fast instead of blocking the screen again.
+        if (static::recentlyOffline()) {
+            throw new OfflineException('offline (waiting before retrying)');
+        }
+
         if (! $this->isConfigured()) {
             throw new FirebaseException('NOT_CONFIGURED', 'Firebase is not configured. Set FIREBASE_API_KEY and FIREBASE_PROJECT_ID in .env');
         }
@@ -206,10 +229,21 @@ class FirebaseClient
                 ->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout));
         } catch (ConnectionException $e) {
+            static::markOffline();
             throw new OfflineException($e->getMessage(), 0, $e);
         } catch (\Illuminate\Http\Client\RequestException $e) {
             $response = $e->response;
+        } catch (\GuzzleHttp\Exception\TransferException $e) {
+            // Any other transport failure without an HTTP answer (TLS, reset, captive network):
+            // treat it as offline so it never signs anyone out or blocks the screen.
+            if (! ($e instanceof \GuzzleHttp\Exception\RequestException) || ! $e->hasResponse()) {
+                static::markOffline();
+                throw new OfflineException($e->getMessage(), 0, $e);
+            }
+            throw $e;
         }
+
+        static::markOnline();
 
         if ($response->failed()) {
             $json = $response->json();

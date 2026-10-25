@@ -76,6 +76,7 @@
              x-data="cardExporter({
                 native: @js($isNative),
                 url: @js(route('events.card', $event)),
+                logUrl: @js(route('client-log')),
                 fileName: @js($fileName),
                 messages: {
                     saved: @js(__('event.card_saved_gallery')),

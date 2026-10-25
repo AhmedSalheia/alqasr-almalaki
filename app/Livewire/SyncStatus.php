@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\AppState;
 use App\Services\AuthSession;
+use App\Services\Firebase\FirebaseClient;
 use App\Services\SyncScheduler;
 use App\Services\Reminders\ReminderService;
 use App\Services\SyncService;
@@ -24,7 +25,7 @@ class SyncStatus extends Component
     }
 
     /** Called by wire:poll every N seconds and once on load. */
-    public function tick(SyncScheduler $scheduler, AuthSession $session, ReminderService $reminders): void
+    public function tick(SyncScheduler $scheduler, AuthSession $session, ReminderService $reminders, bool $online = true): void
     {
         if (! $session->check()) {
             $reminders->clear();
@@ -33,7 +34,13 @@ class SyncStatus extends Component
             return;
         }
 
-        $scheduler->request();
+        if ($online) {
+            $scheduler->request();
+        } else {
+            // The phone says it is offline: don't even try the network.
+            AppState::put('sync.online', false);
+            FirebaseClient::markOffline();
+        }
         $this->checkRevision($session);
 
         // Keep the phone's reminder notifications in line with the (synced) calendar.
@@ -41,8 +48,16 @@ class SyncStatus extends Component
         $reminders->refresh();
     }
 
-    public function syncNow(SyncScheduler $scheduler, AuthSession $session): void
+    public function syncNow(SyncScheduler $scheduler, AuthSession $session, bool $online = true): void
     {
+        if (! $online) {
+            AppState::put('sync.online', false);
+            $this->js('toast('.json_encode(__('app.offline')).', "error")');
+
+            return;
+        }
+
+        FirebaseClient::markOnline(); // explicit request: try right away
         $result = $scheduler->runNow();
         $this->checkRevision($session);
 

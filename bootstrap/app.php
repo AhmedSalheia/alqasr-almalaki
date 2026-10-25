@@ -16,6 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [ApplyPreferences::class]);
+        // These two endpoints are only called by the app's own web view with fetch(); the
+        // NativePHP web view does not always forward custom headers, which caused
+        // "CSRF token mismatch". They stay protected by the signed-in check.
+        $middleware->validateCsrfTokens(except: [
+            'events/*/card',
+            'client-log',
+        ]);
         $middleware->alias([
             'signed.in' => RequireSignedIn::class,
             'admin' => RequireAdmin::class,
