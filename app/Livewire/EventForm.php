@@ -25,6 +25,9 @@ class EventForm extends Component
 
     public string $end_time = '';
 
+    /** false = the venue DJ (config alqasr.venue_dj), true = an external DJ typed in by hand. */
+    public bool $dj_external = false;
+
     public string $dj_name = '';
 
     public string $dj_phone = '';
@@ -46,8 +49,9 @@ class EventForm extends Component
             $this->date = $event->date->toDateString();
             $this->start_time = $event->start_time;
             $this->end_time = (string) $event->end_time;
-            $this->dj_name = (string) $event->dj_name;
-            $this->dj_phone = (string) $event->dj_phone;
+            $this->dj_external = static::isExternalDj($event->dj_name, $event->dj_phone);
+            $this->dj_name = $this->dj_external ? (string) $event->dj_name : '';
+            $this->dj_phone = $this->dj_external ? (string) $event->dj_phone : '';
             $this->phone = (string) $event->phone;
             $this->total_cost = $this->plain($event->total_cost);
             $this->paid_amount = $this->plain($event->paid_amount);
@@ -59,6 +63,31 @@ class EventForm extends Component
         $this->event = null;
         $candidate = $this->prefillDate ?: (string) AppState::get('pref.last_date', '');
         $this->date = preg_match('/^\d{4}-\d{2}-\d{2}$/', $candidate) ? $candidate : today()->toDateString();
+    }
+
+    /** An event uses an external DJ when it has a DJ saved that isn't the venue DJ. */
+    public static function isExternalDj(?string $name, ?string $phone): bool
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return false;
+        }
+        $venue = config('alqasr.venue_dj');
+        $digits = fn ($v) => preg_replace('/\D+/', '', (string) $v);
+
+        return $name !== trim((string) $venue['name'])
+            || ($digits($phone) !== '' && $digits($phone) !== $digits($venue['phone']));
+    }
+
+    public function useVenueDj(): void
+    {
+        $this->dj_external = false;
+        $this->resetErrorBag(['dj_name', 'dj_phone']);
+    }
+
+    public function useExternalDj(): void
+    {
+        $this->dj_external = true;
     }
 
     protected function plain($amount): string
@@ -75,8 +104,8 @@ class EventForm extends Component
             'date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
-            'dj_name' => ['nullable', 'string', 'max:120'],
-            'dj_phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
+            'dj_name' => [Rule::requiredIf($this->dj_external), 'nullable', 'string', 'max:120'],
+            'dj_phone' => [Rule::requiredIf($this->dj_external), 'nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'total_cost' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
             'paid_amount' => ['nullable', 'numeric', 'min:0', Rule::when(is_numeric($this->total_cost), ['lte:total_cost'])],
@@ -117,6 +146,10 @@ class EventForm extends Component
         $data['end_time'] = $data['end_time'] ?: null;
         foreach (['dj_name', 'dj_phone', 'phone', 'notes'] as $f) {
             $data[$f] = filled($data[$f]) ? trim($data[$f]) : null;
+        }
+        if (! $this->dj_external) {
+            $data['dj_name'] = config('alqasr.venue_dj.name');
+            $data['dj_phone'] = config('alqasr.venue_dj.phone');
         }
         $data['sync_status'] = Event::PENDING;
         $data['updated_by_name'] = $session->name();

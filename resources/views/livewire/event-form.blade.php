@@ -44,16 +44,32 @@
     </div>
 
     <div class="panel space-y-4 p-5">
-        <div>
-            <label class="field-label" for="dj_name"><x-icon name="music" class="size-4 text-accent" />{{ __('event.dj_name') }}</label>
-            <input id="dj_name" type="text" wire:model="dj_name" class="field" autocomplete="off">
-            @error('dj_name') <p class="field-error">{{ $message }}</p> @enderror
+        <div class="field-label"><x-icon name="music" class="size-4 text-accent" />{{ __('event.dj') }}</div>
+        <div class="grid grid-cols-2 gap-2">
+            <button type="button" wire:click="useVenueDj" @class(['rounded-2xl border px-3 py-3 text-[14px] font-bold transition', 'border-gold-500 bg-gold-500/10 text-accent' => ! $dj_external, 'border-line text-ink-soft' => $dj_external])>{{ __('event.dj_venue') }}</button>
+            <button type="button" wire:click="useExternalDj" @class(['rounded-2xl border px-3 py-3 text-[14px] font-bold transition', 'border-gold-500 bg-gold-500/10 text-accent' => $dj_external, 'border-line text-ink-soft' => ! $dj_external])>{{ __('event.dj_external') }}</button>
         </div>
-        <div>
-            <label class="field-label" for="dj_phone"><x-icon name="phone" class="size-4 text-accent" />{{ __('event.dj_phone') }} <span class="font-normal opacity-70">({{ __('event.optional') }})</span></label>
-            <input id="dj_phone" type="tel" inputmode="tel" dir="ltr" wire:model="dj_phone" class="field text-start rtl:text-end" placeholder="05X XXX XXXX" autocomplete="off">
-            @error('dj_phone') <p class="field-error">{{ $message }}</p> @enderror
-        </div>
+
+        @if (! $dj_external)
+            <div class="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3">
+                <div class="min-w-0">
+                    <div class="truncate text-[15px] font-bold text-ink">{{ config('alqasr.venue_dj.name') }}</div>
+                    <div class="font-latin text-[13px] text-ink-soft" dir="ltr">{{ config('alqasr.venue_dj.phone') }}</div>
+                </div>
+                <x-icon name="check" class="size-5 shrink-0 text-accent" />
+            </div>
+        @else
+            <div>
+                <label class="field-label" for="dj_name">{{ __('event.dj_name') }}</label>
+                <input id="dj_name" type="text" wire:model="dj_name" class="field" autocomplete="off" required>
+                @error('dj_name') <p class="field-error">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="field-label" for="dj_phone"><x-icon name="phone" class="size-4 text-accent" />{{ __('event.dj_phone') }}</label>
+                <input id="dj_phone" type="tel" inputmode="tel" dir="ltr" wire:model="dj_phone" class="field text-start rtl:text-end" placeholder="05X XXX XXXX" autocomplete="off" required>
+                @error('dj_phone') <p class="field-error">{{ $message }}</p> @enderror
+            </div>
+        @endif
     </div>
 
     <div class="panel space-y-4 p-5">

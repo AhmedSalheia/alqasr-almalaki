@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/) and the proje
 
 ### Added
 - In-app updates from GitHub Releases: the app checks for a newer release every 6 hours (and from Settings → "Check for updates"), downloads the APK in the background on Wi-Fi (or on request on mobile data), and opens Android's installer with one tap. New local plugin `packages/alqasr-updater`.
+- Venue DJ by default: new reservations use the venue DJ (أحمد النجار, 0592758021, set in `config/alqasr.php` → `venue_dj`); choosing "External DJ" shows the DJ name and phone fields, both required.
+
+### Changed
+- Arabic month names follow `lang/ar/calendar.php`; the " / 10" month number shows only in the calendar page header, not on the event card, dates or reminders.
 
 ## [1.0.2] - 2026-10-22
 
