@@ -1,4 +1,4 @@
-<div class="space-y-4" wire:init="load">
+<div class="space-y-4" x-data="netPoll('load', 0)">
     <div class="flex items-end justify-between gap-3">
         <div>
             <h1 class="font-display text-[24px] font-bold gold-text">{{ __('admin.users_title') }}</h1>

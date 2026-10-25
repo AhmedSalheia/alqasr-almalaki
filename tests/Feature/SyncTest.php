@@ -120,6 +120,42 @@ class SyncTest extends TestCase
         $this->assertTrue(app(AuthSession::class)->check());
     }
 
+    public function test_after_a_connection_failure_calls_fail_fast_for_a_while(): void
+    {
+        $calls = 0;
+        Http::fake(function () use (&$calls) {
+            $calls++;
+            throw new ConnectionException('no network');
+        });
+
+        $this->assertSame('offline', app(SyncService::class)->sync()['status']);
+        $this->assertSame('offline', app(SyncService::class)->sync()['status']);
+        $this->assertSame(1, $calls, 'second sync must not touch the network');
+
+        \App\Services\Firebase\FirebaseClient::markOnline();
+        app(SyncService::class)->sync();
+        $this->assertSame(2, $calls);
+    }
+
+    public function test_offline_tick_skips_the_network(): void
+    {
+        Http::fake(fn () => throw new \RuntimeException('network must not be used'));
+
+        \Livewire\Livewire::test(\App\Livewire\SyncStatus::class)->call('tick', false)->assertOk();
+        $this->assertFalse(AppState::get('sync.online'));
+        $this->assertTrue(\App\Services\Firebase\FirebaseClient::recentlyOffline());
+    }
+
+    public function test_admin_pages_do_not_call_firebase_while_offline(): void
+    {
+        Http::fake(fn () => throw new \RuntimeException('network must not be used'));
+
+        \Livewire\Livewire::test(\App\Livewire\Admin\Users::class)->call('load', false)
+            ->assertSet('loaded', true)->assertSee(__('app.requires_online'));
+        \Livewire\Livewire::test(\App\Livewire\Admin\DeviceRequests::class)->call('load', false)
+            ->assertSee(__('app.requires_online'));
+    }
+
     public function test_untied_device_is_signed_out_and_local_data_wiped(): void
     {
         Event::create(['groom_name' => 'Secret', 'date' => '2026-11-05', 'start_time' => '20:00', 'sync_status' => Event::SYNCED]);

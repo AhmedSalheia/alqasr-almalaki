@@ -26,8 +26,12 @@ class PendingDevice extends Component
         }
     }
 
-    public function check(AuthService $auth, SyncScheduler $scheduler)
+    public function check(AuthService $auth, SyncScheduler $scheduler, bool $online = true)
     {
+        if (! $online) {
+            return null;
+        }
+
         try {
             $this->state = $auth->checkPendingDevice();
         } catch (OfflineException|FirebaseException) {
