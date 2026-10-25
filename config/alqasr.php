@@ -28,6 +28,12 @@ return [
 
     'locales' => ['ar', 'en'],
 
+    // The venue's own DJ, used for every reservation unless "External DJ" is chosen.
+    'venue_dj' => [
+        'name' => env('ALQASR_VENUE_DJ_NAME', 'أحمد النجار'),
+        'phone' => env('ALQASR_VENUE_DJ_PHONE', '0592758021'),
+    ],
+
     // Reminder notifications before a reservation (to the person who added it + all admins)
     'reminders' => [
         'days_before' => (int) env('ALQASR_REMINDER_DAYS', 3),
