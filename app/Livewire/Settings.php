@@ -64,6 +64,24 @@ class Settings extends Component
         }
     }
 
+    public function checkUpdates(\App\Services\Updates\UpdateChecker $checker): void
+    {
+        FirebaseClient::markOnline(); // explicit request: try right away
+        $result = $checker->check();
+
+        [$message, $type] = match ($result['status']) {
+            'available' => [__('app.update_found', ['version' => $result['info']['version']]), 'success'],
+            'up_to_date' => [__('app.up_to_date'), 'success'],
+            'not_configured' => [__('app.updates_not_configured'), 'error'],
+            'offline' => [__('app.requires_online'), 'error'],
+            default => [__('app.error_generic'), 'error'],
+        };
+        if ($result['status'] === 'available') {
+            $this->dispatch('update-found');
+        }
+        $this->js('toast('.json_encode($message).', '.json_encode($type).')');
+    }
+
     public function toggleReminders(ReminderService $reminders): void
     {
         $on = ! ReminderService::enabled();

@@ -1,0 +1,26 @@
+{
+    "name": "alqasr/mobile-updater",
+    "description": "NativePHP Mobile plugin: download an APK update in the background and open Android's installer.",
+    "type": "nativephp-plugin",
+    "license": "MIT",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "nativephp/mobile": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alqasr\\Updater\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Alqasr\\Updater\\UpdaterServiceProvider"
+            ]
+        },
+        "nativephp": {
+            "manifest": "nativephp.json"
+        }
+    }
+}

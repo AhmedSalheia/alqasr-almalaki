@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15a5cb8d43874ed903090f2dc91bc65a",
+    "content-hash": "bc163de5a2b99f6f49f3ac5a3472cf4e",
     "packages": [
         {
             "name": "alqasr/mobile-gallery-saver",
@@ -75,6 +75,43 @@
                 "MIT"
             ],
             "description": "NativePHP Mobile plugin: schedule local reminder notifications (Android WorkManager).",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "alqasr/mobile-updater",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/alqasr-updater",
+                "reference": "9a059150636fa1db90bedbb25c0f2f48ac5fff52"
+            },
+            "require": {
+                "nativephp/mobile": "^4.0",
+                "php": "^8.2"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Alqasr\\Updater\\UpdaterServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Alqasr\\Updater\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "NativePHP Mobile plugin: download an APK update in the background and open Android's installer.",
             "transport-options": {
                 "symlink": true,
                 "relative": true

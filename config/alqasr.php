@@ -35,6 +35,14 @@ return [
         'horizon_days' => 120,                              // only schedule reservations this far ahead
     ],
 
+    // In-app updates from GitHub Releases (public repo). The release workflow fills the repo in.
+    'updates' => [
+        'repo' => env('ALQASR_UPDATE_REPO'),          // e.g. "ahmedsalheia/alqasr-calendar"
+        'check_hours' => (int) env('ALQASR_UPDATE_CHECK_HOURS', 6),
+        // Automatic checks only in release builds (local/debug builds would always look outdated).
+        'auto_check' => filter_var(env('ALQASR_UPDATE_AUTO_CHECK', env('APP_ENV') === 'production'), FILTER_VALIDATE_BOOL),
+    ],
+
     // First day of the week in the month grid: 0 = Sunday ... 6 = Saturday
     'week_starts_on' => (int) env('ALQASR_WEEK_STARTS_ON', 6),
 ];

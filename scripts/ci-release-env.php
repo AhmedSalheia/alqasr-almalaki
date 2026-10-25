@@ -23,6 +23,8 @@ $values = [
     'NATIVEPHP_APP_VERSION' => $tag,
     'NATIVEPHP_APP_VERSION_CODE' => (string) $versionCode,
     'QUEUE_CONNECTION' => 'database',
+    // The app checks this repo's GitHub Releases for updates
+    'ALQASR_UPDATE_REPO' => getenv('GITHUB_REPOSITORY'),
 ];
 
 foreach ($values as $key => $value) {

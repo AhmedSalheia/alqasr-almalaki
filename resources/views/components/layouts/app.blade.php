@@ -28,6 +28,7 @@
     </header>
 
     <main class="mx-auto max-w-xl px-4 pt-4 pb-36">
+        <livewire:update-banner />
         {{ $slot }}
     </main>
 
