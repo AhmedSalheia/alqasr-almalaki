@@ -19,9 +19,15 @@ class Format
         return app()->getLocale() === 'ar' ? $number.' '.$symbol : $symbol.' '.$number;
     }
 
-    public static function monthName(int $month): string
+    /**
+     * Month name as written in lang/{locale}/calendar.php. A trailing " / 10" style month
+     * number is kept only when $withNumber is true (the calendar page header).
+     */
+    public static function monthName(int $month, bool $withNumber = false): string
     {
-        return __('calendar.months.'.$month);
+        $name = trim((string) __('calendar.months.'.$month));
+
+        return $withNumber ? $name : trim((string) preg_replace('~\s*/\s*[0-9\x{0660}-\x{0669}]+\s*$~u', '', $name));
     }
 
     public static function weekday(CarbonInterface $date, bool $short = false): string

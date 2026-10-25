@@ -56,6 +56,7 @@ class ScreensTest extends TestCase
             ->set('groom_name', 'يوسف التميمي')
             ->set('date', '2026-12-24')
             ->set('start_time', '19:00')
+            ->call('useExternalDj')
             ->set('dj_name', 'DJ Sami')
             ->set('dj_phone', '٠٥٢٢٣٣٣٤٤٤')
             ->set('phone', '٠٥٩٩١٢٣٤٥٦')

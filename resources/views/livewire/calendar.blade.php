@@ -21,7 +21,7 @@
         </button>
         <div class="text-center">
             @if ($view === 'month')
-                <h1 class="font-display text-[26px] font-bold leading-tight gold-text">{{ Format::monthName($selected->month) }}</h1>
+                <h1 class="font-display text-[26px] font-bold leading-tight gold-text">{{ Format::monthName($selected->month, withNumber: true) }}</h1>
                 <div class="font-latin text-[15px] font-semibold tracking-[0.3em] text-ink-soft">{{ $selected->year }}</div>
             @else
                 <h1 class="font-display text-[24px] font-bold leading-tight gold-text">{{ Format::weekday($selected) }}</h1>
