@@ -32,6 +32,8 @@ class NativeServiceProvider extends ServiceProvider
             \Alqasr\GallerySaver\GallerySaverServiceProvider::class,
             // Local reminder notifications before reservations (local plugin in packages/)
             \Alqasr\Reminders\RemindersServiceProvider::class,
+            // In-app updates from GitHub Releases (local plugin in packages/)
+            \Alqasr\Updater\UpdaterServiceProvider::class,
         ];
     }
 }

@@ -18,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(\App\Services\Reminders\ReminderGateway::class, fn () => Native::can('Reminders.Schedule')
             ? new \App\Services\Reminders\NativeReminderGateway
             : new \App\Services\Reminders\NullReminderGateway);
+        $this->app->bind(\App\Services\Updates\UpdateGateway::class, fn () => Native::can('Updater.Download')
+            ? new \App\Services\Updates\NativeUpdateGateway
+            : new \App\Services\Updates\NullUpdateGateway);
     }
 
     public function boot(): void

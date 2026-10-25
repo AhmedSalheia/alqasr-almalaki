@@ -1,0 +1,30 @@
+{
+    "namespace": "Updater",
+    "bridge_functions": [
+        {
+            "name": "Updater.Download",
+            "android": "com.alqasr.updater.UpdaterFunctions.Download",
+            "description": "Download an APK update in the background"
+        },
+        {
+            "name": "Updater.Status",
+            "android": "com.alqasr.updater.UpdaterFunctions.Status",
+            "description": "Progress of the update download"
+        },
+        {
+            "name": "Updater.Install",
+            "android": "com.alqasr.updater.UpdaterFunctions.Install",
+            "description": "Open Android's installer for the downloaded update"
+        }
+    ],
+    "android": {
+        "min_version": 26,
+        "permissions": [
+            "android.permission.REQUEST_INSTALL_PACKAGES"
+        ],
+        "dependencies": {
+            "implementation": []
+        }
+    },
+    "events": []
+}
