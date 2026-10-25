@@ -36,6 +36,7 @@ class Settings extends Component
 
     public function syncNow(SyncScheduler $scheduler): void
     {
+        FirebaseClient::markOnline(); // explicit request: try right away
         $result = $scheduler->runNow();
         $ok = ($result['status'] ?? '') === 'ok';
         $this->js('toast('.json_encode($ok ? __('app.synced') : __('app.offline')).', '.json_encode($ok ? 'success' : 'error').')');

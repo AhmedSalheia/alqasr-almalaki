@@ -11,7 +11,13 @@ class Gallery
      */
     public static function saveImage(string $path, ?string $name = null, string $album = 'Alqasr Almalaky'): array
     {
-        if (! function_exists('nativephp_call') || (! getenv('NATIVEPHP_RUNNING') && getenv('JUMP_BRIDGE_PORT') === false)) {
+        if (! function_exists('nativephp_call')) {
+            return ['success' => false, 'error' => 'not running on a device'];
+        }
+        // On the phone nativephp_call() is NativePHP's C extension (an internal function);
+        // on a dev machine it is a PHP polyfill that only works during `native:jump`.
+        $onDevice = (new \ReflectionFunction('nativephp_call'))->isInternal();
+        if (! $onDevice && getenv('JUMP_BRIDGE_PORT') === false) {
             return ['success' => false, 'error' => 'not running on a device'];
         }
 
@@ -21,6 +27,7 @@ class Gallery
             'album' => $album,
         ]));
 
+        \Illuminate\Support\Facades\Log::info('[card] Gallery.SaveImage raw', ['raw' => $result]);
         $decoded = is_string($result) ? json_decode($result, true) : null;
         if (! is_array($decoded)) {
             return ['success' => false, 'error' => 'no response'];

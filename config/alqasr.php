@@ -11,8 +11,8 @@ return [
         'project_id' => env('FIREBASE_PROJECT_ID'),
         'database_id' => env('FIREBASE_DATABASE_ID', '(default)'),
         // Seconds before an HTTP call to Firebase is considered failed (offline)
-        'connect_timeout' => 4,
-        'timeout' => 10,
+        'connect_timeout' => 3,
+        'timeout' => 8,
     ],
 
     'sync_interval' => (int) env('ALQASR_SYNC_INTERVAL', 30),

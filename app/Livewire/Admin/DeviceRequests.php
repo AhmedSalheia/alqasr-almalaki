@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Admin\Concerns\HandlesFirebaseErrors;
+use App\Services\Firebase\FirebaseClient;
 use App\Services\Firebase\FirebaseException;
 use App\Services\Firebase\OfflineException;
 use App\Services\UserDirectory;
@@ -16,9 +17,20 @@ class DeviceRequests extends Component
 
     public bool $loaded = false;
 
-    public function load(UserDirectory $directory): void
+    public function load(UserDirectory $directory, bool $online = true, bool $retry = false): void
     {
         $this->loadError = null;
+        $this->loaded = true;
+
+        if (! $online) {
+            $this->loadError = __('app.requires_online');
+
+            return;
+        }
+        if ($retry) {
+            FirebaseClient::markOnline(); // the user asked: try right away
+        }
+
         try {
             $this->requests = $directory->pendingRequests();
         } catch (OfflineException) {
