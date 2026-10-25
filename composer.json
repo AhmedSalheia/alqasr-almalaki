@@ -17,7 +17,8 @@
         "nativephp/mobile": "^4.6",
         "nativephp/mobile-share": "^1.0",
         "alqasr/mobile-gallery-saver": "^1.0",
-        "alqasr/mobile-reminders": "^1.0"
+        "alqasr/mobile-reminders": "^1.0",
+        "alqasr/mobile-updater": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -100,6 +101,13 @@
         {
             "type": "path",
             "url": "packages/alqasr-reminders",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/alqasr-updater",
             "options": {
                 "symlink": true
             }

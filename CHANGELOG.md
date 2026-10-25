@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-25
+
+### Added
+- In-app updates from GitHub Releases: the app checks for a newer release every 6 hours (and from Settings → "Check for updates"), downloads the APK in the background on Wi-Fi (or on request on mobile data), and opens Android's installer with one tap. New local plugin `packages/alqasr-updater`.
+
+## [1.0.2] - 2026-10-22
+
+### Fixed
+- The 1.0.1 build was published without the app fixes below (only the CI changes made it in); 1.0.2 ships them.
+- Network failures of any kind (TLS errors, resets, captive Wi-Fi) are treated as "offline", so they never sign anyone out.
+
 ## [1.0.1] - 2026-10-21
 
 ### Fixed

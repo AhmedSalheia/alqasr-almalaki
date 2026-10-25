@@ -115,6 +115,9 @@
         <img src="{{ asset('images/emblem.png') }}" class="mx-auto h-10 opacity-80 dark:hidden" alt="">
         <img src="{{ asset('images/emblem-dark.png') }}" class="mx-auto hidden h-10 opacity-80 dark:block" alt="">
         <div class="mt-1 text-[12px] text-ink-soft">{{ __('app.name') }} · {{ __('app.version', ['version' => config('nativephp.version', '1.0.0')]) }}</div>
+        <button wire:click="checkUpdates" wire:loading.attr="disabled" wire:target="checkUpdates" class="btn-outline mx-auto mt-3 py-2 text-[13px]">
+            <x-icon name="refresh" class="size-4" wire:loading.class="animate-spin" wire:target="checkUpdates" />{{ __('app.check_updates') }}
+        </button>
     </div>
 
     @if ($confirmingLogout)
