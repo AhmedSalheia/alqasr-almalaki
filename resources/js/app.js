@@ -3,11 +3,11 @@ import { toBlob } from 'html-to-image';
 
 /* ------------------------------------------------------- Card rendering helpers
  * html-to-image normally embeds EVERY web font of the page (dozens of files) into one
- * huge SVG, which Android's WebView can fail to decode ("[object Event]"). We embed only
- * the few font files the card uses and inline the images ourselves, so the SVG stays small
- * and no network request happens while drawing.
+ * huge SVG, which Android's WebView can fail to decode ("[object Event]"). Fetching the
+ * built font files from JS was not reliable on phones either, so the server hands us one
+ * small stylesheet with only the card's fonts already embedded (/card/fonts.css), and the
+ * card's logo is already a data: URL. Nothing is fetched while drawing.
  */
-const CARD_FONT_FILES = /(tajawal-(arabic|latin)-(400|500|700)|el-messiri-(arabic|latin)-700|cormorant-garamond-latin-(600|700))-normal[^/]*\.woff2/;
 let cardFontCss = null;
 
 function blobToDataUrl(blob) {
@@ -25,43 +25,20 @@ async function urlToDataUrl(url) {
     return blobToDataUrl(await res.blob());
 }
 
-function fontFaceRules(rules, out, base) {
-    for (const rule of rules) {
-        if (rule.type === CSSRule.FONT_FACE_RULE) {
-            out.push({ rule, base });
-        } else if (rule.cssRules) {
-            fontFaceRules(rule.cssRules, out, base);          // @layer / @media / @supports
-        } else if (rule.styleSheet) {
-            try { fontFaceRules(rule.styleSheet.cssRules, out, rule.styleSheet.href || base); } catch (e) { /* cross-origin */ }
-        }
+async function loadCardFontCss(url) {
+    if (cardFontCss) return cardFontCss;
+    const res = await fetch(url, { headers: { Accept: 'text/css' } });
+    if (!res.ok) throw new Error('could not load card fonts (' + res.status + ')');
+    const css = await res.text();
+    if (!css.includes('@font-face')) throw new Error('card fonts are empty');
+    // Make sure the same faces are usable by the page too, so measurements match the drawing.
+    if (!document.getElementById('card-font-css')) {
+        const style = document.createElement('style');
+        style.id = 'card-font-css';
+        style.textContent = css;
+        document.head.appendChild(style);
     }
-}
-
-async function buildCardFontCss() {
-    if (cardFontCss !== null) return cardFontCss;
-    const found = [];
-    for (const sheet of document.styleSheets) {
-        try { fontFaceRules(sheet.cssRules, found, sheet.href || location.href); } catch (e) { /* cross-origin */ }
-    }
-    let css = '';
-    for (const { rule, base } of found) {
-        const src = rule.style.getPropertyValue('src');
-        const match = src.match(/url\(["']?([^"')]+\.woff2[^"')]*)["']?\)/);
-        if (!match || !CARD_FONT_FILES.test(match[1])) continue;
-        try {
-            const dataUrl = await urlToDataUrl(new URL(match[1], base).href);
-            const range = rule.style.getPropertyValue('unicode-range');
-            css += '@font-face{font-family:' + rule.style.getPropertyValue('font-family') +
-                ';font-style:' + (rule.style.getPropertyValue('font-style') || 'normal') +
-                ';font-weight:' + rule.style.getPropertyValue('font-weight') +
-                ';font-display:block;src:url(' + dataUrl + ") format('woff2')" +
-                (range ? ';unicode-range:' + range : '') + ';}\n';
-        } catch (e) {
-            console.warn('[card] font skipped', e);
-        }
-    }
-    cardFontCss = css;
-    return css;
+    return (cardFontCss = css);
 }
 
 async function inlineImages(node) {
@@ -165,21 +142,23 @@ document.addEventListener('alpine:init', () => {
         async render() {
             const node = document.getElementById('event-card');
             if (!node) throw new Error('card element not found');
-            await document.fonts.ready;
             await this.withTimeout(inlineImages(node), 20000, 'loading images');
             const base = { pixelRatio: 2, cacheBust: false, backgroundColor: null, skipAutoScale: true };
-
-            try {
-                const fontEmbedCSS = await this.withTimeout(buildCardFontCss(), 20000, 'loading fonts');
-                const options = { ...base, fontEmbedCSS };
-                // Two renders: the first warms the image/font cache inside html-to-image (WebView quirk).
+            // Two renders: the first warms the image/font cache inside html-to-image (WebView quirk).
+            const draw = async (options) => {
                 await this.withTimeout(toBlob(node, options), 30000, 'render');
                 return await this.withTimeout(toBlob(node, options), 30000, 'render');
+            };
+
+            try {
+                const fontEmbedCSS = await this.withTimeout(loadCardFontCss(opts.fontsUrl), 20000, 'loading fonts');
+                await document.fonts.ready;
+                return await draw({ ...base, fontEmbedCSS });
             } catch (e) {
                 // Last resort: draw without embedded fonts (system fonts) rather than fail.
                 console.warn('[card] render with fonts failed, retrying without', e);
                 this.report('render-fonts', describeError(e));
-                return await this.withTimeout(toBlob(node, { ...base, skipFonts: true }), 30000, 'render');
+                return await draw({ ...base, skipFonts: true });
             }
         },
         csrf() {

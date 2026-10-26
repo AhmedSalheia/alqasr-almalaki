@@ -23,6 +23,15 @@ use Throwable;
  */
 class CardController extends Controller
 {
+    /** The card's fonts as one stylesheet with every file embedded (used while drawing the PNG). */
+    public function fonts(): \Illuminate\Http\Response
+    {
+        return response(\App\Support\CardAssets::fontCss(), 200, [
+            'Content-Type' => 'text/css; charset=UTF-8',
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
+    }
+
     public function store(Request $request, Event $event): JsonResponse
     {
         $action = $request->input('action') === 'share' ? 'share' : 'save';

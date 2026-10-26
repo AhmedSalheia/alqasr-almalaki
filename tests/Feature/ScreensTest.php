@@ -68,7 +68,7 @@ class ScreensTest extends TestCase
 
         $e = Event::firstOrFail();
         $this->assertSame('0599123456', $e->phone);
-        $this->assertSame('0522333444', $e->dj_phone);
+        $this->assertSame('+972522333444', $e->dj_phone);
         $this->assertEquals(3000, $e->paid_amount);
         $this->assertEquals(6000, $e->remaining());
         $this->assertSame(Event::PENDING, $e->sync_status);

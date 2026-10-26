@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AppState;
+use App\Support\Venue;
 use App\Models\Event;
 use App\Services\Firebase\FirebaseClient;
 use App\Services\Firebase\FirebaseException;
@@ -57,6 +58,13 @@ class SyncService
 
             $pushed = $this->push($token);
             $pulled = $this->pull($token);
+            try {
+                $this->syncVenue($token);
+            } catch (Throwable $e) {
+                // Never let the venue details block reservations (e.g. Firestore rules not updated yet).
+                AppState::put(Venue::PULLED_AT, now()->toIso8601String());
+                \Illuminate\Support\Facades\Log::warning('[sync] venue details: '.($e instanceof FirebaseException ? $e->errorCode : $e->getMessage()));
+            }
 
             AppState::put('sync.online', true);
             AppState::put('sync.last_success_at', now()->toIso8601String());
@@ -113,6 +121,30 @@ class SyncService
             'role' => $profile['role'] ?? 'staff',
             'name' => $profile['name'] ?? $this->session->name(),
         ]);
+    }
+
+    /** Push this admin's venue edit, and re-read the shared venue details now and then. */
+    public function syncVenue(string $token, bool $force = false): void
+    {
+        if (Venue::dirty() && $this->session->isAdmin()) {
+            $this->firebase->patchDocument('settings/venue', Venue::toRemote(), $token);
+            AppState::forget(Venue::DIRTY);
+            AppState::put(Venue::PULLED_AT, now()->toIso8601String());
+
+            return;
+        }
+
+        $last = AppState::get(Venue::PULLED_AT);
+        $every = (int) config('alqasr.venue.refresh_minutes', 10);
+        if (! $force && $last && \Carbon\Carbon::parse($last)->diffInMinutes(now()) < $every) {
+            return;
+        }
+
+        $doc = $this->firebase->getDocument('settings/venue', $token);
+        AppState::put(Venue::PULLED_AT, now()->toIso8601String());
+        if ($doc) {
+            Venue::applyRemote($doc);
+        }
     }
 
     public function push(string $token): int

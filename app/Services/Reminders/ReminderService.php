@@ -147,7 +147,7 @@ class ReminderService
             $title = __('event.reminder_title', ['days' => $days, 'name' => $event->groom_name]);
             $parts = [Format::longDate($event->date).' · '.strip_tags(Format::timeRange($event->start_time, $event->end_time))];
             if ($event->dj_name) {
-                $parts[] = __('event.dj_name').': '.$event->dj_name.($event->dj_phone ? ' ('.$event->dj_phone.')' : '');
+                $parts[] = __('event.dj_name').': '.$event->dj_name.($event->dj_phone ? ' ('.\App\Support\Phone::display($event->dj_phone).')' : '');
             }
             if ($event->phone) {
                 $parts[] = __('event.phone').': '.$event->phone;

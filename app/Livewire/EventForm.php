@@ -6,6 +6,8 @@ use App\Models\AppState;
 use App\Models\Event;
 use App\Services\AuthSession;
 use App\Services\SyncScheduler;
+use App\Support\Phone;
+use App\Support\Venue;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -32,6 +34,8 @@ class EventForm extends Component
 
     public string $dj_phone = '';
 
+    public string $dj_phone_code = Phone::DEFAULT_CODE;
+
     public string $phone = '';
 
     public string $total_cost = '';
@@ -50,8 +54,10 @@ class EventForm extends Component
             $this->start_time = $event->start_time;
             $this->end_time = (string) $event->end_time;
             $this->dj_external = static::isExternalDj($event->dj_name, $event->dj_phone);
-            $this->dj_name = $this->dj_external ? (string) $event->dj_name : '';
-            $this->dj_phone = $this->dj_external ? (string) $event->dj_phone : '';
+            if ($this->dj_external) {
+                $this->dj_name = (string) $event->dj_name;
+                [$this->dj_phone_code, $this->dj_phone] = Phone::split($event->dj_phone);
+            }
             $this->phone = (string) $event->phone;
             $this->total_cost = $this->plain($event->total_cost);
             $this->paid_amount = $this->plain($event->paid_amount);
@@ -72,11 +78,11 @@ class EventForm extends Component
         if ($name === '') {
             return false;
         }
-        $venue = config('alqasr.venue_dj');
-        $digits = fn ($v) => preg_replace('/\D+/', '', (string) $v);
+        $venue = Venue::get();
+        $national = Phone::national($phone);
 
-        return $name !== trim((string) $venue['name'])
-            || ($digits($phone) !== '' && $digits($phone) !== $digits($venue['phone']));
+        return $name !== trim($venue['dj_name'])
+            || ($national !== '' && $national !== Phone::national($venue['dj_phone']));
     }
 
     public function useVenueDj(): void
@@ -105,7 +111,8 @@ class EventForm extends Component
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
             'dj_name' => [Rule::requiredIf($this->dj_external), 'nullable', 'string', 'max:120'],
-            'dj_phone' => [Rule::requiredIf($this->dj_external), 'nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
+            'dj_phone' => [Rule::requiredIf($this->dj_external), 'nullable', 'string', 'max:30', 'regex:/^[0-9\-\s()]{6,30}$/'],
+            'dj_phone_code' => [Rule::in(Phone::CODES)],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'total_cost' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
             'paid_amount' => ['nullable', 'numeric', 'min:0', Rule::when(is_numeric($this->total_cost), ['lte:total_cost'])],
@@ -147,10 +154,13 @@ class EventForm extends Component
         foreach (['dj_name', 'dj_phone', 'phone', 'notes'] as $f) {
             $data[$f] = filled($data[$f]) ? trim($data[$f]) : null;
         }
-        if (! $this->dj_external) {
-            $data['dj_name'] = config('alqasr.venue_dj.name');
-            $data['dj_phone'] = config('alqasr.venue_dj.phone');
+        if ($this->dj_external) {
+            $data['dj_phone'] = Phone::join($this->dj_phone_code, $data['dj_phone']);
+        } else {
+            $data['dj_name'] = Venue::value('dj_name');
+            $data['dj_phone'] = Venue::value('dj_phone');
         }
+        unset($data['dj_phone_code']);
         $data['sync_status'] = Event::PENDING;
         $data['updated_by_name'] = $session->name();
 

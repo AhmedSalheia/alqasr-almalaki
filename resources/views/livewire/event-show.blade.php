@@ -27,7 +27,7 @@
                 ['music', __('event.dj_name'), $event->dj_name ?: '—', false, null, null],
             ];
             if ($event->dj_phone) {
-                $rows[] = ['phone', __('event.dj_phone'), $event->dj_phone, true, $djDigits, $djWhatsapp];
+                $rows[] = ['phone', __('event.dj_phone'), \App\Support\Phone::display($event->dj_phone), true, $djDigits, $djWhatsapp];
             }
         @endphp
         @foreach ($rows as [$icon, $label, $value, $ltr, $call, $wa])
@@ -77,6 +77,7 @@
                 native: @js($isNative),
                 url: @js(route('events.card', $event)),
                 logUrl: @js(route('client-log')),
+                fontsUrl: @js(route('card.fonts')),
                 fileName: @js($fileName),
                 messages: {
                     saved: @js(__('event.card_saved_gallery')),

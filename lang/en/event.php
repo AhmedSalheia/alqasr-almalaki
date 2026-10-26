@@ -14,6 +14,8 @@ return [
     'dj' => 'DJ',
     'dj_venue' => 'Venue DJ',
     'dj_external' => 'External DJ',
+    'dj_phone_code' => 'Country code',
+    'dj_details' => 'DJ details',
     'dj_name' => 'DJ name',
     'dj_phone' => 'DJ phone',
     'phone' => 'Groom phone',
