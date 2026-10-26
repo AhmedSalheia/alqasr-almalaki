@@ -27,6 +27,7 @@ Route::middleware('signed.in')->group(function () {
     Route::get('/events/{event}', EventShow::class)->name('events.show');
     Route::get('/events/{event}/edit', EventForm::class)->name('events.edit');
     Route::post('/events/{event}/card', [CardController::class, 'store'])->name('events.card');
+    Route::get('/card/fonts.css', [CardController::class, 'fonts'])->name('card.fonts');
     // Lets the web view report front-end errors into laravel.log (php artisan native:tail)
     Route::post('/client-log', function (\Illuminate\Http\Request $request) {
         \Illuminate\Support\Facades\Log::warning('[client] '.$request->input('stage').': '.mb_substr((string) $request->input('message'), 0, 500), [

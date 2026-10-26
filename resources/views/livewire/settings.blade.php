@@ -94,6 +94,56 @@
         <div class="mt-0.5 break-all font-latin text-[12px] text-ink-soft" dir="ltr">{{ $deviceId }}</div>
     </section>
 
+    {{-- Venue details (admins): shown on every event card, synced to all phones --}}
+    @if ($isAdmin)
+        <section class="panel p-5">
+            <button wire:click="editVenue" class="flex w-full items-center justify-between text-[15px] font-bold text-ink">
+                <span class="flex items-center gap-2"><x-icon name="pin" class="size-4 text-accent" />{{ __('app.venue_details') }}</span>
+                <x-icon name="chevron-down" class="size-5 text-ink-soft transition {{ $editingVenue ? 'rotate-180' : '' }}" />
+            </button>
+            @if (! $editingVenue)
+                <dl class="mt-3 space-y-1.5 text-[14px]">
+                    <div class="flex justify-between gap-3"><dt class="text-ink-soft">{{ __('app.venue_location') }}</dt><dd class="truncate font-bold text-ink">{{ $venue['location'] }}</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-ink-soft">{{ __('app.venue_phone') }}</dt><dd class="font-latin font-bold text-ink" dir="ltr">{{ \App\Support\Phone::display($venue['phone']) }}</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-ink-soft">{{ __('app.venue_dj_name') }}</dt><dd class="truncate font-bold text-ink">{{ $venue['dj_name'] }}</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-ink-soft">{{ __('app.venue_dj_phone') }}</dt><dd class="font-latin font-bold text-ink" dir="ltr">{{ \App\Support\Phone::display($venue['dj_phone']) }}</dd></div>
+                </dl>
+            @else
+                <form wire:submit="saveVenue" class="mt-4 space-y-3">
+                    <div>
+                        <label class="field-label" for="venueLocation">{{ __('app.venue_location') }}</label>
+                        <input id="venueLocation" type="text" wire:model="venueLocation" class="field" maxlength="80">
+                        @error('venueLocation') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="field-label" for="venuePhone">{{ __('app.venue_phone') }}</label>
+                        <input id="venuePhone" type="tel" inputmode="tel" dir="ltr" wire:model="venuePhone" class="field text-left">
+                        @error('venuePhone') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="field-label" for="venueDjName">{{ __('app.venue_dj_name') }}</label>
+                        <input id="venueDjName" type="text" wire:model="venueDjName" class="field">
+                        @error('venueDjName') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="field-label" for="venueDjPhone">{{ __('app.venue_dj_phone') }}</label>
+                        <div class="flex gap-2" dir="ltr">
+                            <select wire:model="venueDjPhoneCode" class="field w-[6.5rem] shrink-0 font-latin font-bold">
+                                @foreach (\App\Support\Phone::CODES as $code)
+                                    <option value="{{ $code }}">{{ $code }}</option>
+                                @endforeach
+                            </select>
+                            <input id="venueDjPhone" type="tel" inputmode="tel" dir="ltr" wire:model="venueDjPhone" class="field min-w-0 flex-1 text-left">
+                        </div>
+                        @error('venueDjPhone') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                    <p class="text-[12px] text-ink-soft">{{ __('app.venue_hint') }}</p>
+                    <button class="btn-navy w-full">{{ __('app.save') }}</button>
+                </form>
+            @endif
+        </section>
+    @endif
+
     {{-- Password --}}
     <section class="panel p-5">
         <button wire:click="$toggle('changingPassword')" class="flex w-full items-center justify-between text-[15px] font-bold text-ink">

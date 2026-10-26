@@ -40,7 +40,7 @@ class DjAndMonthsTest extends TestCase
 
         $e = Event::firstOrFail();
         $this->assertSame('أحمد النجار', $e->dj_name);
-        $this->assertSame('0592758021', $e->dj_phone);
+        $this->assertSame('+972592758021', $e->dj_phone);
     }
 
     public function test_external_dj_requires_name_and_phone(): void

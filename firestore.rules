@@ -49,6 +49,12 @@ service cloud.firestore {
       allow read, write: if isActive();
     }
 
+    // ---- Shared app settings (venue details shown on cards): everyone reads, admins edit ----
+    match /settings/{doc} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

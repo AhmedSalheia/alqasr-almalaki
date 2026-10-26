@@ -28,10 +28,15 @@ return [
 
     'locales' => ['ar', 'en'],
 
-    // The venue's own DJ, used for every reservation unless "External DJ" is chosen.
-    'venue_dj' => [
-        'name' => env('ALQASR_VENUE_DJ_NAME', 'أحمد النجار'),
-        'phone' => env('ALQASR_VENUE_DJ_PHONE', '0592758021'),
+    // Defaults for the venue details. Admins change them in Settings (synced to every phone).
+    'venue' => [
+        'location' => env('ALQASR_VENUE_LOCATION', 'خانيونس - جنوب أبراج طيبة'),
+        'phone' => env('ALQASR_VENUE_PHONE', '0592475403'),
+        // The venue's own DJ, used for every reservation unless "External DJ" is chosen.
+        'dj_name' => env('ALQASR_VENUE_DJ_NAME', 'أحمد النجار'),
+        'dj_phone' => env('ALQASR_VENUE_DJ_PHONE', '+972592758021'),
+        // How often (minutes) phones re-read the venue details from Firebase.
+        'refresh_minutes' => 10,
     ],
 
     // Reminder notifications before a reservation (to the person who added it + all admins)
