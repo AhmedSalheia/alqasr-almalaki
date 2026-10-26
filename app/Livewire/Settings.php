@@ -10,7 +10,9 @@ use App\Services\Firebase\OfflineException;
 use App\Services\Reminders\ReminderService;
 use App\Services\SyncScheduler;
 use App\Services\SyncService;
+use App\Support\Phone;
 use App\Support\Prefs;
+use App\Support\Venue;
 use Livewire\Component;
 
 class Settings extends Component
@@ -20,6 +22,60 @@ class Settings extends Component
     public string $newPassword = '';
 
     public bool $changingPassword = false;
+
+    public bool $editingVenue = false;
+
+    public string $venueLocation = '';
+
+    public string $venuePhone = '';
+
+    public string $venueDjName = '';
+
+    public string $venueDjPhoneCode = Phone::DEFAULT_CODE;
+
+    public string $venueDjPhone = '';
+
+    public function editVenue(AuthSession $session): void
+    {
+        abort_unless($session->isAdmin(), 403);
+        $v = Venue::get();
+        $this->venueLocation = $v['location'];
+        $this->venuePhone = $v['phone'];
+        $this->venueDjName = $v['dj_name'];
+        [$this->venueDjPhoneCode, $this->venueDjPhone] = Phone::split($v['dj_phone']);
+        $this->resetErrorBag();
+        $this->editingVenue = ! $this->editingVenue;
+    }
+
+    public function saveVenue(AuthSession $session, SyncScheduler $scheduler): void
+    {
+        abort_unless($session->isAdmin(), 403);
+        $this->venuePhone = Phone::normalize($this->venuePhone);
+        $this->venueDjPhone = Phone::digits($this->venueDjPhone);
+
+        $this->validate([
+            'venueLocation' => ['required', 'string', 'max:80'],
+            'venuePhone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
+            'venueDjName' => ['required', 'string', 'max:120'],
+            'venueDjPhoneCode' => ['required', \Illuminate\Validation\Rule::in(Phone::CODES)],
+            'venueDjPhone' => ['required', 'string', 'regex:/^[0-9]{6,15}$/'],
+        ], [], [
+            'venueLocation' => __('app.venue_location'),
+            'venuePhone' => __('app.venue_phone'),
+            'venueDjName' => __('app.venue_dj_name'),
+            'venueDjPhone' => __('app.venue_dj_phone'),
+        ]);
+
+        Venue::save([
+            'location' => $this->venueLocation,
+            'phone' => $this->venuePhone,
+            'dj_name' => $this->venueDjName,
+            'dj_phone' => Phone::join($this->venueDjPhoneCode, $this->venueDjPhone),
+        ]);
+        $scheduler->request();
+        $this->editingVenue = false;
+        $this->js('toast('.json_encode(__('app.venue_saved')).')');
+    }
 
     public function setLocale(string $locale)
     {
@@ -114,6 +170,8 @@ class Settings extends Component
             'remindersCount' => count(\App\Models\AppState::get(ReminderService::STATE, [])),
             'reminderDays' => (int) config('alqasr.reminders.days_before'),
             'reminderHour' => (int) config('alqasr.reminders.hour'),
+            'venue' => Venue::get(),
+            'isAdmin' => $session->isAdmin(),
         ])->title(__('app.settings'));
     }
 }

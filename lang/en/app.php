@@ -75,4 +75,11 @@ return [
     'up_to_date' => 'You have the latest version.',
     'update_found' => 'Version :version is available — see the banner at the top.',
     'updates_not_configured' => 'Updates are not configured in this build (ALQASR_UPDATE_REPO).',
+    'venue_details' => 'Venue details',
+    'venue_location' => 'Location',
+    'venue_phone' => 'Main contact number',
+    'venue_dj_name' => 'Venue DJ',
+    'venue_dj_phone' => 'Venue DJ phone',
+    'venue_saved' => 'Venue details saved',
+    'venue_hint' => 'Shown on every reservation card and sent to all phones on the next sync.',
 ];

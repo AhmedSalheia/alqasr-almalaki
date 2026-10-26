@@ -75,4 +75,11 @@ return [
     'up_to_date' => 'لديك أحدث إصدار.',
     'update_found' => 'الإصدار :version متوفر — انظر الإشعار في أعلى الصفحة.',
     'updates_not_configured' => 'التحديثات غير مفعّلة في هذه النسخة (ALQASR_UPDATE_REPO).',
+    'venue_details' => 'بيانات القاعة',
+    'venue_location' => 'الموقع',
+    'venue_phone' => 'رقم التواصل الرئيسي',
+    'venue_dj_name' => 'دي جي القاعة',
+    'venue_dj_phone' => 'رقم دي جي القاعة',
+    'venue_saved' => 'تم حفظ بيانات القاعة',
+    'venue_hint' => 'تظهر على بطاقة كل حجز، وتصل لجميع الأجهزة عند المزامنة.',
 ];

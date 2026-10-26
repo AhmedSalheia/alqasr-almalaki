@@ -1,16 +1,25 @@
-{{-- The shareable event card. Fixed 540 x 675 CSS px -> exported at 2x = 1080 x 1350 PNG (4:5). --}}
+{{-- The shareable event card. Fixed 540 x 675 CSS px -> exported at 2x = 1080 x 1350 PNG (4:5).
+     Every line that must stay on one line is "whitespace-nowrap"; the logo is a data: URL and the
+     fonts come from /card/fonts.css, so the PNG looks exactly like the screen. --}}
 @props(['event', 'style' => 'ivory', 'payments' => true])
 @php
+    use App\Support\CardAssets;
     use App\Support\Format;
+    use App\Support\Phone;
+    use App\Support\Venue;
     $royal = $style === 'royal';
+    $rtl = app()->getLocale() === 'ar';
     $len = mb_strlen($event->groom_name);
-    $nameSize = $len > 26 ? 'text-[30px]' : ($len > 18 ? 'text-[36px]' : 'text-[42px]');
+    $nameSize = $len > 30 ? 'text-[26px]' : ($len > 24 ? 'text-[30px]' : ($len > 18 ? 'text-[36px]' : 'text-[42px]'));
     $gold = '#e09a15';
     $ink = $royal ? 'text-ivory-50' : 'text-navy-900';
     $soft = $royal ? 'text-ivory-200/75' : 'text-navy-700/75';
     $tile = $royal ? 'bg-white/5 border-gold-400/25' : 'bg-white/70 border-gold-600/20';
+    $venue = Venue::get();
+    $djPhone = Phone::display($event->dj_phone);
+    $align = 'text-align:'.($rtl ? 'right' : 'left');
 @endphp
-<div {{ $attributes }} dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" lang="{{ app()->getLocale() }}"
+<div {{ $attributes }} dir="{{ $rtl ? 'rtl' : 'ltr' }}" lang="{{ app()->getLocale() }}"
      class="relative overflow-hidden font-sans {{ $royal ? 'bg-navy-900' : 'bg-ivory-50' }}"
      style="width:540px;height:675px;background-image:{{ $royal
         ? 'radial-gradient(120% 70% at 50% 0%, #1f3455 0%, #0c1a2d 55%, #070f1c 100%)'
@@ -33,77 +42,80 @@
         </svg>
     @endforeach
 
-    <div class="relative flex h-full flex-col items-center px-[46px] pt-[34px] pb-[30px] text-center">
-        <img src="{{ asset($royal ? 'images/emblem-dark.png' : 'images/emblem.png') }}" alt="" class="h-[78px] w-auto">
-        <div class="mt-0.5 pb-1 font-display text-[22px] font-bold leading-snug gold-text">القصر الملكي</div>
-        <div class="font-latin text-[10.5px] font-bold tracking-[0.42em] {{ $soft }}" dir="ltr">AL QASR AL MALAKI</div>
+    <div class="relative flex h-full flex-col items-center px-[44px] pt-[30px] pb-[28px] text-center">
+        {{-- logo (already carries both names, each on one line) --}}
+        <img src="{{ CardAssets::logo($royal) }}" alt="القصر الملكي" width="139" height="118" style="width:139px;height:118px">
 
-        <div class="mt-3 flex w-full items-center gap-3">
+        <div class="mt-2 flex w-full items-center gap-3">
             <div class="h-px flex-1" style="background:linear-gradient(90deg,transparent,{{ $gold }})"></div>
             <svg class="size-3" viewBox="0 0 12 12"><path d="M6 0l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="{{ $gold }}"/></svg>
             <div class="h-px flex-1" style="background:linear-gradient(90deg,{{ $gold }},transparent)"></div>
         </div>
 
-        <div class="mt-3 text-[13px] font-bold tracking-wide" style="color:{{ $gold }}">{{ __('event.card_title') }}</div>
-        <div class="mt-1 w-full font-display font-bold leading-tight {{ $nameSize }} {{ $royal ? 'gold-text' : 'text-navy-900' }}" style="overflow-wrap:anywhere">{{ $event->groom_name }}</div>
+        <div class="mt-2 whitespace-nowrap text-[13px] font-bold tracking-wide" style="color:{{ $gold }}">{{ __('event.card_title') }}</div>
+        <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap font-display font-bold leading-[1.35] {{ $nameSize }} {{ $royal ? 'gold-text' : 'text-navy-900' }}">{{ $event->groom_name }}</div>
 
         {{-- date & time --}}
-        <div class="mt-4 flex w-full items-stretch justify-center gap-3">
-            <div class="flex flex-1 flex-col items-center justify-center rounded-2xl border {{ $tile }} py-2.5">
-                <div class="text-[12px] font-bold {{ $soft }}">{{ Format::weekday($event->date) }}</div>
-                <div class="font-latin text-[40px] font-bold leading-none {{ $ink }}">{{ $event->date->day }}</div>
-                <div class="text-[13px] font-bold {{ $ink }}">{{ Format::monthName($event->date->month) }} <span class="font-latin">{{ $event->date->year }}</span></div>
+        <div class="mt-2 flex w-full items-stretch gap-3">
+            <div class="flex flex-1 flex-col items-center justify-center rounded-2xl border {{ $tile }} py-2">
+                <div class="whitespace-nowrap text-[12px] font-bold {{ $soft }}">{{ Format::weekday($event->date) }}</div>
+                <div class="font-latin text-[38px] font-bold leading-none {{ $ink }}">{{ $event->date->day }}</div>
+                <div class="mt-0.5 whitespace-nowrap text-[13px] font-bold {{ $ink }}">{{ Format::monthName($event->date->month) }} <span class="font-latin">{{ $event->date->year }}</span></div>
             </div>
-            <div class="flex flex-1 flex-col items-center justify-center rounded-2xl border {{ $tile }} py-2.5">
-                <div class="text-[12px] font-bold {{ $soft }}">{{ __('event.time') }}</div>
-                <div class="mt-1 font-latin text-[24px] font-bold leading-none {{ $ink }}">{{ Format::time($event->start_time) }}</div>
+            <div class="flex flex-1 flex-col items-center justify-center rounded-2xl border {{ $tile }} py-2">
+                <div class="whitespace-nowrap text-[12px] font-bold {{ $soft }}">{{ __('event.time') }}</div>
+                <div class="mt-1 whitespace-nowrap font-latin text-[26px] font-bold leading-none {{ $ink }}">{{ Format::time($event->start_time) }}</div>
                 @if ($event->end_time)
-                    <div class="mt-1 font-latin text-[14px] font-semibold {{ $soft }}">{{ __('calendar.until') }} {{ Format::time($event->end_time) }}</div>
+                    <div class="mt-1.5 whitespace-nowrap text-[13px] font-bold {{ $soft }}">{{ __('calendar.until') }} <span class="font-latin">{{ Format::time($event->end_time) }}</span></div>
                 @endif
             </div>
         </div>
 
-        {{-- details --}}
-        <div class="mt-3 grid w-full grid-cols-2 gap-x-3 gap-y-2 text-start">
-            @if ($event->dj_name)
-                <div class="rounded-xl border {{ $tile }} px-3 py-2">
-                    <div class="text-[11px] font-bold" style="color:{{ $gold }}">{{ __('event.dj_name') }}</div>
-                    <div class="truncate text-[15px] font-bold {{ $ink }}">{{ $event->dj_name }}</div>
-                </div>
-            @endif
-            @if ($event->phone)
-                <div class="rounded-xl border {{ $tile }} px-3 py-2 {{ $event->dj_name ? '' : 'col-span-2' }}">
-                    <div class="text-[11px] font-bold" style="color:{{ $gold }}">{{ __('event.phone') }}</div>
-                    <div class="truncate font-latin text-[16px] font-bold {{ $ink }}" dir="ltr" style="text-align:{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">{{ $event->phone }}</div>
-                </div>
-            @endif
+        {{-- DJ details & groom phone --}}
+        <div class="mt-2 grid w-full grid-cols-2 gap-3 text-start">
+            <div class="min-w-0 rounded-xl border {{ $tile }} px-3 py-2">
+                <div class="flex items-center gap-1 whitespace-nowrap text-[11px] font-bold" style="color:{{ $gold }}"><x-icon name="music" class="size-3" stroke="2.2" />{{ __('event.dj_details') }}</div>
+                <div dir="auto" class="truncate text-start text-[15px] font-bold leading-snug {{ $ink }}">{{ $event->dj_name ?: '—' }}</div>
+                @if ($djPhone)
+                    <div class="truncate whitespace-nowrap font-latin text-[14px] font-bold {{ $soft }}" dir="ltr" style="{{ $align }}">{{ $djPhone }}</div>
+                @endif
+            </div>
+            <div class="min-w-0 rounded-xl border {{ $tile }} px-3 py-2">
+                <div class="flex items-center gap-1 whitespace-nowrap text-[11px] font-bold" style="color:{{ $gold }}"><x-icon name="phone" class="size-3" stroke="2.2" />{{ __('event.phone') }}</div>
+                <div class="truncate whitespace-nowrap font-latin text-[16px] font-bold leading-snug {{ $ink }}" dir="ltr" style="{{ $align }}">{{ $event->phone ?: '—' }}</div>
+            </div>
         </div>
 
         @if ($payments && (float) $event->total_cost > 0)
             <div class="mt-2 grid w-full grid-cols-3 overflow-hidden rounded-xl border {{ $tile }}">
                 @foreach ([['event.total_cost', $event->total_cost, $ink], ['event.paid_amount', $event->paid_amount, $royal ? 'text-emerald-300' : 'text-emerald-700'], ['event.remaining', $event->remaining(), $royal ? 'text-rose-300' : 'text-rose-700']] as [$label, $amount, $color])
-                    <div class="px-2 py-2 {{ ! $loop->first ? 'border-s '.($royal ? 'border-gold-400/20' : 'border-gold-600/15') : '' }}">
-                        <div class="text-[10.5px] font-bold" style="color:{{ $gold }}">{{ __($label) }}</div>
-                        <div class="font-latin text-[15px] font-bold {{ $color }}">{{ Format::money($amount) }}</div>
+                    <div class="px-2 py-1.5 {{ ! $loop->first ? 'border-s '.($royal ? 'border-gold-400/20' : 'border-gold-600/15') : '' }}">
+                        <div class="whitespace-nowrap text-[10.5px] font-bold" style="color:{{ $gold }}">{{ __($label) }}</div>
+                        <div class="whitespace-nowrap font-latin text-[15px] font-bold {{ $color }}">{{ Format::money($amount) }}</div>
                     </div>
                 @endforeach
             </div>
         @endif
 
-        @if ($event->notes)
-            <div class="mt-2 w-full rounded-xl border {{ $tile }} px-3 py-2 text-start">
-                <div class="text-[11px] font-bold" style="color:{{ $gold }}">{{ __('event.notes') }}</div>
-                <div class="text-[13px] leading-snug {{ $ink }}" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">{{ $event->notes }}</div>
-            </div>
-        @endif
+        {{-- notes: always shown --}}
+        <div class="mt-2 w-full rounded-xl border {{ $tile }} px-3 py-1.5 text-start">
+            <div class="flex items-center gap-1 whitespace-nowrap text-[11px] font-bold" style="color:{{ $gold }}"><x-icon name="notes" class="size-3" stroke="2.2" />{{ __('event.notes') }}</div>
+            <div dir="auto" class="text-start text-[13px] leading-snug {{ $event->notes ? $ink : $soft }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.375em">{{ $event->notes ?: '—' }}</div>
+        </div>
 
+        {{-- footer: venue location & contact, then the greeting and the date --}}
         <div class="mt-auto w-full pt-2">
-            <div class="font-display text-[15px] font-bold" style="color:{{ $gold }}">{{ __('event.card_subtitle') }}</div>
-            <div class="mt-1 flex items-center justify-center gap-2 font-latin text-[10.5px] font-semibold {{ $soft }}" dir="ltr">
-                {{-- <span><bdi>{{ __('event.card_ref') }}</bdi> <bdi>{{ strtoupper(substr(str_replace('-', '', $event->id), 0, 8)) }}</bdi></span> --}}
-                {{-- <span>•</span> --}}
-                <span>{{ now()->format('Y-m-d') }}</span>
+            <div class="flex items-center justify-center gap-4 whitespace-nowrap text-[12px] font-bold {{ $ink }}">
+                @if ($venue['location'])
+                    <span class="inline-flex min-w-0 items-center gap-1"><x-icon name="pin" class="size-3.5 shrink-0" stroke="2.2" style="color:{{ $gold }}" /><span class="truncate">{{ $venue['location'] }}</span></span>
+                @endif
+                @if ($venue['phone'])
+                    <span class="inline-flex shrink-0 items-center gap-1"><x-icon name="phone" class="size-3.5" stroke="2.2" style="color:{{ $gold }}" /><span class="font-latin text-[13px]" dir="ltr">{{ Phone::display($venue['phone']) }}</span></span>
+                @endif
             </div>
+            <div class="mx-auto my-1.5 h-px w-40" style="background:linear-gradient(90deg,transparent,{{ $gold }},transparent)"></div>
+            <div class="whitespace-nowrap font-display text-[15px] font-bold" style="color:{{ $gold }}">{{ __('event.card_subtitle') }}</div>
+            <div class="mt-0.5 whitespace-nowrap font-latin text-[11px] font-semibold {{ $soft }}" dir="ltr">{{ now()->format('Y-m-d') }}</div>
         </div>
     </div>
 </div>

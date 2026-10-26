@@ -53,8 +53,8 @@
         @if (! $dj_external)
             <div class="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3">
                 <div class="min-w-0">
-                    <div class="truncate text-[15px] font-bold text-ink">{{ config('alqasr.venue_dj.name') }}</div>
-                    <div class="font-latin text-[13px] text-ink-soft" dir="ltr">{{ config('alqasr.venue_dj.phone') }}</div>
+                    <div class="truncate text-[15px] font-bold text-ink">{{ \App\Support\Venue::value('dj_name') }}</div>
+                    <div class="font-latin text-[14px] font-semibold text-ink-soft" dir="ltr" style="text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">{{ \App\Support\Phone::display(\App\Support\Venue::value('dj_phone')) }}</div>
                 </div>
                 <x-icon name="check" class="size-5 shrink-0 text-accent" />
             </div>
@@ -66,7 +66,14 @@
             </div>
             <div>
                 <label class="field-label" for="dj_phone"><x-icon name="phone" class="size-4 text-accent" />{{ __('event.dj_phone') }}</label>
-                <input id="dj_phone" type="tel" inputmode="tel" dir="ltr" wire:model="dj_phone" class="field text-start rtl:text-end" placeholder="05X XXX XXXX" autocomplete="off" required>
+                <div class="flex gap-2" dir="ltr">
+                    <select wire:model="dj_phone_code" class="field w-[6.5rem] shrink-0 font-latin font-bold" aria-label="{{ __('event.dj_phone_code') }}">
+                        @foreach (\App\Support\Phone::CODES as $code)
+                            <option value="{{ $code }}">{{ $code }}</option>
+                        @endforeach
+                    </select>
+                    <input id="dj_phone" type="tel" inputmode="tel" dir="ltr" wire:model="dj_phone" class="field min-w-0 flex-1 text-left" placeholder="05X XXX XXXX" autocomplete="off" required>
+                </div>
                 @error('dj_phone') <p class="field-error">{{ $message }}</p> @enderror
             </div>
         @endif

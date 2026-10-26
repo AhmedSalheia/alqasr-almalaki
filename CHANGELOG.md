@@ -7,9 +7,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/) and the proje
 
 ### Added
 - In-app updates from GitHub Releases: the app checks for a newer release every 6 hours (and from Settings → "Check for updates"), downloads the APK in the background on Wi-Fi (or on request on mobile data), and opens Android's installer with one tap. New local plugin `packages/alqasr-updater`.
-- Venue DJ by default: new reservations use the venue DJ (أحمد النجار, 0592758021, set in `config/alqasr.php` → `venue_dj`); choosing "External DJ" shows the DJ name and phone fields, both required.
+- Venue DJ by default: new reservations use the venue DJ (أحمد النجار, +972 59 275 8021); choosing "External DJ" shows the DJ name and phone fields, both required.
+- Venue details in Settings (admins): location, main contact number, venue DJ name and phone. They appear on every card and sync to all phones (Firestore `settings/venue`).
+- DJ phone numbers carry a country code (+972 / +970).
+
+### Fixed
+- Card PNG used system fonts and lost the logo on phones: the card's fonts now come from the app itself as one small stylesheet (`/card/fonts.css`) and the logo is embedded, so nothing is fetched while drawing.
 
 ### Changed
+- Event card redesigned: the full logo, "DJ details" (name + number with country code), notes always shown, venue location and contact in the footer, and every name, date and time kept on one line.
 - Arabic month names follow `lang/ar/calendar.php`; the " / 10" month number shows only in the calendar page header, not on the event card, dates or reminders.
 
 ## [1.0.2] - 2026-10-22

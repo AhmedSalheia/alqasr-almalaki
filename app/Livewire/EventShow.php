@@ -72,7 +72,7 @@ class EventShow extends Component
             'isNative' => Native::isNative(),
             'phoneDigits' => $digits,
             'whatsapp' => Event::whatsappNumber($this->event->phone),
-            'djDigits' => preg_replace('/\D+/', '', (string) $this->event->dj_phone),
+            'djDigits' => (str_starts_with(trim((string) $this->event->dj_phone), '+') ? '+' : '').preg_replace('/\D+/', '', (string) $this->event->dj_phone),
             'djWhatsapp' => Event::whatsappNumber($this->event->dj_phone),
             'fileName' => 'alqasr-'.$this->event->date->format('Y-m-d').'-'.(\Illuminate\Support\Str::slug($this->event->groom_name) ?: 'event').'.png',
         ])->layout('components.layouts.app', [
