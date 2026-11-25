@@ -20,4 +20,5 @@ return [
     'until' => 'until',
     'booked' => 'Booked',
     'free' => 'Free',
+    'all_reservations' => 'All reservations',
 ];

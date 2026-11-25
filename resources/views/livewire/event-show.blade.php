@@ -10,6 +10,9 @@
             <div class="text-[15px] font-medium text-ink-soft">{{ Format::longDate($event->date) }}</div>
             <div class="mt-1 font-latin text-[20px] font-bold text-ink">{{ Format::timeRange($event->start_time, $event->end_time) }}</div>
             <div class="mt-3 flex flex-wrap justify-center gap-2">
+                @if ($event->isMorning())
+                    <span class="chip bg-morning/12 text-morning"><x-icon name="sun" class="size-3.5" stroke="2.4" />{{ __('event.morning_badge') }}</span>
+                @endif
                 <x-payment-chip :event="$event" />
                 @if ($event->sync_status === 'pending')
                     <span class="chip bg-gold-500/15 text-gold-700 dark:text-gold-300"><x-icon name="cloud-up" class="size-3.5" />{{ __('event.pending_sync') }}</span>
@@ -44,20 +47,28 @@
             </div>
         @endforeach
 
-        <div class="grid grid-cols-3 divide-x divide-line text-center rtl:divide-x-reverse">
-            <div class="px-2 py-3.5">
-                <div class="text-[11px] font-bold text-ink-soft">{{ __('event.total_cost') }}</div>
-                <div class="mt-0.5 font-latin text-[17px] font-bold text-ink">{{ Format::money($event->total_cost) }}</div>
-            </div>
-            <div class="px-2 py-3.5">
-                <div class="text-[11px] font-bold text-ink-soft">{{ __('event.paid_amount') }}</div>
-                <div class="mt-0.5 font-latin text-[17px] font-bold text-emerald-600 dark:text-emerald-400">{{ Format::money($event->paid_amount) }}</div>
-            </div>
-            <div class="px-2 py-3.5">
-                <div class="text-[11px] font-bold text-ink-soft">{{ __('event.remaining') }}</div>
-                <div class="mt-0.5 font-latin text-[17px] font-bold {{ $event->remaining() > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-emerald-600 dark:text-emerald-400' }}">{{ Format::money($event->remaining()) }}</div>
-            </div>
+        @php
+            $money = [[__('event.total_cost'), $event->total_cost, 'text-ink']];
+            if ($event->hasDiscount()) {
+                $money[] = [__('event.discount'), $event->discount, 'text-accent'];
+            }
+            $money[] = [__('event.paid_amount'), $event->paid_amount, 'text-emerald-600 dark:text-emerald-400'];
+            $money[] = [__('event.remaining'), $event->remaining(), $event->remaining() > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-emerald-600 dark:text-emerald-400'];
+        @endphp
+        <div class="grid {{ count($money) === 4 ? 'grid-cols-4' : 'grid-cols-3' }} divide-x divide-line text-center rtl:divide-x-reverse">
+            @foreach ($money as $m)
+                <div class="min-w-0 px-1.5 py-3.5">
+                    <div class="text-[11px] font-bold leading-tight text-ink-soft">{{ $m[0] }}</div>
+                    <div class="mt-0.5 truncate font-latin {{ count($money) === 4 ? 'text-[15px]' : 'text-[17px]' }} font-bold {{ $m[2] }}" dir="ltr">{{ ($m[3] ?? '') }}{{ Format::money($m[1]) }}</div>
+                </div>
+            @endforeach
         </div>
+        @if ($event->hasDiscount())
+            <div class="flex items-center justify-between px-4 py-2.5 text-[13px]">
+                <span class="font-bold text-ink-soft">{{ __('event.net_cost') }}</span>
+                <span class="font-latin text-[16px] font-bold text-ink">{{ Format::money($event->netCost()) }}</span>
+            </div>
+        @endif
 
         @if ($event->notes)
             <div class="px-4 py-3.5">

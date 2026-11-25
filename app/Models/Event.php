@@ -36,7 +36,7 @@ class Event extends Model
 
     protected $fillable = [
         'id', 'groom_name', 'date', 'start_time', 'end_time', 'dj_name', 'dj_phone', 'phone',
-        'total_cost', 'paid_amount', 'notes', 'created_by', 'created_by_name',
+        'total_cost', 'discount', 'paid_amount', 'notes', 'created_by', 'created_by_name',
         'updated_by_name', 'deleted', 'sync_status', 'remote_updated_at',
     ];
 
@@ -44,6 +44,7 @@ class Event extends Model
     {
         return [
             'total_cost' => 'decimal:2',
+            'discount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'deleted' => 'boolean',
         ];
@@ -68,9 +69,32 @@ class Event extends Model
         return $query->orderBy('date')->orderBy('start_time');
     }
 
+    /** Total cost after the discount (a fixed amount, not a percentage). */
+    public function netCost(): float
+    {
+        return max(0, (float) $this->total_cost - (float) $this->discount);
+    }
+
+    public function hasDiscount(): bool
+    {
+        return (float) $this->discount > 0;
+    }
+
     public function remaining(): float
     {
-        return max(0, (float) $this->total_cost - (float) $this->paid_amount);
+        return max(0, $this->netCost() - (float) $this->paid_amount);
+    }
+
+    /** A reservation that starts before 14:00 is a morning reservation (nothing is stored: it is just the time). */
+    public static function startsInMorning(?string $startTime): bool
+    {
+        return (bool) preg_match('/^\d{1,2}:\d{2}$/', (string) $startTime)
+            && strcmp(str_pad((string) $startTime, 5, '0', STR_PAD_LEFT), (string) config('alqasr.morning_before', '14:00')) < 0;
+    }
+
+    public function isMorning(): bool
+    {
+        return static::startsInMorning($this->start_time);
     }
 
     public function isPaidInFull(): bool
@@ -111,6 +135,7 @@ class Event extends Model
             'djPhone' => ['stringValue' => (string) $this->dj_phone],
             'phone' => ['stringValue' => (string) $this->phone],
             'totalCost' => ['doubleValue' => (float) $this->total_cost],
+            'discount' => ['doubleValue' => (float) $this->discount],
             'paidAmount' => ['doubleValue' => (float) $this->paid_amount],
             'notes' => ['stringValue' => (string) $this->notes],
             'createdBy' => ['stringValue' => (string) $this->created_by],
@@ -132,6 +157,7 @@ class Event extends Model
             'dj_phone' => ($data['djPhone'] ?? null) ?: null,
             'phone' => ($data['phone'] ?? null) ?: null,
             'total_cost' => (float) ($data['totalCost'] ?? 0),
+            'discount' => (float) ($data['discount'] ?? 0),
             'paid_amount' => (float) ($data['paidAmount'] ?? 0),
             'notes' => ($data['notes'] ?? null) ?: null,
             'created_by' => ($data['createdBy'] ?? null) ?: null,

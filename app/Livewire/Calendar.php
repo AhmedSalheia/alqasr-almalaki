@@ -18,6 +18,9 @@ class Calendar extends Component
     #[Url(as: 'v')]
     public string $view = '';
 
+    /** Which reservations to show: all (default), morning (before 14:00) or evening. */
+    public string $period = 'all';
+
     public function mount(): void
     {
         $this->date = $this->validDate($this->date)?->toDateString() ?? today()->toDateString();
@@ -28,6 +31,20 @@ class Calendar extends Component
     {
         $this->view = $view === 'day' ? 'day' : 'month';
         Prefs::setCalendarView($this->view);
+    }
+
+    public function setPeriod(string $period): void
+    {
+        $this->period = in_array($period, ['morning', 'evening'], true) ? $period : 'all';
+    }
+
+    protected function matchesPeriod(Event $e): bool
+    {
+        return match ($this->period) {
+            'morning' => $e->isMorning(),
+            'evening' => ! $e->isMorning(),
+            default => true,
+        };
     }
 
     public function select(string $date): void
@@ -112,6 +129,7 @@ class Calendar extends Component
         $events = Event::query()->visible()
             ->whereBetween('date', [$gridStart->toDateString(), $gridEnd->toDateString()])
             ->ordered()->get()
+            ->filter(fn (Event $e) => $this->matchesPeriod($e))
             ->groupBy(fn (Event $e) => $e->date->toDateString());
 
         $weeks = [];
@@ -134,8 +152,9 @@ class Calendar extends Component
         }
         $stripCounts = Event::query()->visible()
             ->whereBetween('date', [$strip[0]->toDateString(), $strip[6]->toDateString()])
-            ->selectRaw('date, count(*) as c')->groupBy('date')->pluck('c', 'date')
-            ->mapWithKeys(fn ($c, $d) => [substr($d, 0, 10) => $c]);
+            ->get(['id', 'date', 'start_time'])
+            ->filter(fn (Event $e) => $this->matchesPeriod($e))
+            ->countBy(fn (Event $e) => $e->date->toDateString());
 
         return view('livewire.calendar', [
             'selected' => $selected,

@@ -42,6 +42,9 @@ class EventForm extends Component
 
     public string $paid_amount = '';
 
+    /** A fixed amount (₪) taken off the total — not a percentage. */
+    public string $discount = '';
+
     public string $notes = '';
 
     public function mount(?Event $event = null): void
@@ -61,6 +64,8 @@ class EventForm extends Component
             $this->phone = (string) $event->phone;
             $this->total_cost = $this->plain($event->total_cost);
             $this->paid_amount = $this->plain($event->paid_amount);
+            $this->discount = $this->plain($event->discount);
+
             $this->notes = (string) $event->notes;
 
             return;
@@ -83,6 +88,15 @@ class EventForm extends Component
 
         return $name !== trim($venue['dj_name'])
             || ($national !== '' && $national !== Phone::national($venue['dj_phone']));
+    }
+
+    /** Net total after the discount, as typed so far (for the live "remaining" line). */
+    public function netTotal(): float
+    {
+        $total = is_numeric($this->total_cost) ? (float) $this->total_cost : 0;
+        $discount = is_numeric($this->discount) ? (float) $this->discount : 0;
+
+        return max(0, $total - $discount);
     }
 
     public function useVenueDj(): void
@@ -115,14 +129,18 @@ class EventForm extends Component
             'dj_phone_code' => [Rule::in(Phone::CODES)],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'total_cost' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
-            'paid_amount' => ['nullable', 'numeric', 'min:0', Rule::when(is_numeric($this->total_cost), ['lte:total_cost'])],
+            'discount' => ['nullable', 'numeric', 'min:0', Rule::when(is_numeric($this->total_cost), ['lte:total_cost'])],
+            'paid_amount' => ['nullable', 'numeric', 'min:0', Rule::when(is_numeric($this->total_cost), ['max:'.$this->netTotal()])],
             'notes' => ['nullable', 'string', 'max:3000'],
         ];
     }
 
     protected function messages(): array
     {
-        return ['paid_amount.lte' => __('event.paid_more_than_total')];
+        return [
+            'paid_amount.max' => __('event.paid_more_than_total'),
+            'discount.lte' => __('event.discount_more_than_total'),
+        ];
     }
 
     protected function validationAttributes(): array
@@ -142,7 +160,7 @@ class EventForm extends Component
 
     public function save(AuthSession $session, SyncScheduler $scheduler)
     {
-        foreach (['phone', 'dj_phone', 'total_cost', 'paid_amount'] as $f) {
+        foreach (['phone', 'dj_phone', 'total_cost', 'discount', 'paid_amount'] as $f) {
             $this->{$f} = trim($this->normaliseDigits($this->{$f}));
         }
         $this->groom_name = trim($this->groom_name);
@@ -150,6 +168,7 @@ class EventForm extends Component
         $data = $this->validate();
         $data['total_cost'] = (float) ($data['total_cost'] ?: 0);
         $data['paid_amount'] = (float) ($data['paid_amount'] ?: 0);
+        $data['discount'] = (float) ($data['discount'] ?: 0);
         $data['end_time'] = $data['end_time'] ?: null;
         foreach (['dj_name', 'dj_phone', 'phone', 'notes'] as $f) {
             $data[$f] = filled($data[$f]) ? trim($data[$f]) : null;

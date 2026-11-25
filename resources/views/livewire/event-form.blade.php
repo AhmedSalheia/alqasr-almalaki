@@ -1,4 +1,4 @@
-@php $remaining = max(0, (float) (is_numeric($total_cost) ? $total_cost : 0) - (float) (is_numeric($paid_amount) ? $paid_amount : 0)); @endphp
+@php $remaining = max(0, $this->netTotal() - (float) (is_numeric($paid_amount) ? $paid_amount : 0)); @endphp
 <form wire:submit="save" class="space-y-4">
     <div class="text-center">
         <h1 class="font-display text-[26px] font-bold gold-text">{{ $heading }}</h1>
@@ -98,6 +98,20 @@
                 @error('paid_amount') <p class="field-error">{{ $message }}</p> @enderror
             </div>
         </div>
+        <div>
+            <label class="field-label" for="discount">{{ __('event.discount') }} <span class="font-normal opacity-70">({{ __('event.discount_hint') }})</span></label>
+            <div class="relative">
+                <input id="discount" type="text" inputmode="decimal" wire:model.live.debounce.400ms="discount" class="field pe-9 font-latin text-[18px] font-bold" placeholder="0">
+                <span class="pointer-events-none absolute inset-y-0 end-3 grid place-items-center text-ink-soft">{{ config('alqasr.currency.symbol') }}</span>
+            </div>
+            @error('discount') <p class="field-error">{{ $message }}</p> @enderror
+        </div>
+        @if (is_numeric($discount) && (float) $discount > 0)
+            <div class="flex items-center justify-between px-1 text-[13px]">
+                <span class="font-bold text-ink-soft">{{ __('event.net_cost') }}</span>
+                <span class="font-latin text-[16px] font-bold text-ink">{{ \App\Support\Format::money($this->netTotal()) }}</span>
+            </div>
+        @endif
         <div class="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3">
             <span class="text-[13px] font-bold text-ink-soft">{{ __('event.remaining') }}</span>
             <span class="font-latin text-[20px] font-bold {{ $remaining > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-emerald-600 dark:text-emerald-400' }}">{{ \App\Support\Format::money($remaining) }}</span>
