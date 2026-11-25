@@ -35,7 +35,7 @@ return [
     'added_by' => 'أضافه :name',
     'call' => 'اتصال',
     'whatsapp' => 'واتساب',
-    'paid_more_than_total' => 'لا يمكن أن تكون الدفعة المدفوعة أكبر من التكلفة الإجمالية.',
+    'paid_more_than_total' => 'لا يمكن أن تكون الدفعة المدفوعة أكبر من الإجمالي بعد الخصم.',
     'same_day_warning' => 'تنبيه: يوجد :count حجز في هذا اليوم مسبقاً.',
     // card
     'card_title' => 'حجز حفل زفاف',
@@ -57,4 +57,11 @@ return [
     // reminders
     'reminder_title' => 'حجز بعد :days أيام: :name',
     'reminder_hint' => 'وقت مناسب لتأكيد الترتيبات وإجراء الاتصالات اللازمة.',
+    'morning' => 'صباحي',
+    'evening' => 'مسائي',
+    'morning_badge' => 'حجز صباحي',
+    'discount' => 'الخصم',
+    'discount_hint' => 'مبلغ ثابت',
+    'net_cost' => 'الإجمالي بعد الخصم',
+    'discount_more_than_total' => 'الخصم لا يمكن أن يتجاوز التكلفة الإجمالية.',
 ];

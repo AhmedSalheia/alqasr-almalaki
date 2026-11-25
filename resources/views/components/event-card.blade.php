@@ -18,6 +18,12 @@
     $venue = Venue::get();
     $djPhone = Phone::display($event->dj_phone);
     $align = 'text-align:'.($rtl ? 'right' : 'left');
+    $money = [['event.total_cost', $event->total_cost, $ink, '']];
+    if ($event->hasDiscount()) {
+        $money[] = ['event.discount', $event->discount, '', ''];
+    }
+    $money[] = ['event.paid_amount', $event->paid_amount, $royal ? 'text-emerald-300' : 'text-emerald-700', ''];
+    $money[] = ['event.remaining', $event->remaining(), $royal ? 'text-rose-300' : 'text-rose-700', ''];
 @endphp
 <div {{ $attributes }} dir="{{ $rtl ? 'rtl' : 'ltr' }}" lang="{{ app()->getLocale() }}"
      class="relative overflow-hidden font-sans {{ $royal ? 'bg-navy-900' : 'bg-ivory-50' }}"
@@ -87,11 +93,11 @@
         </div>
 
         @if ($payments && (float) $event->total_cost > 0)
-            <div class="mt-2 grid w-full grid-cols-3 overflow-hidden rounded-xl border {{ $tile }}">
-                @foreach ([['event.total_cost', $event->total_cost, $ink], ['event.paid_amount', $event->paid_amount, $royal ? 'text-emerald-300' : 'text-emerald-700'], ['event.remaining', $event->remaining(), $royal ? 'text-rose-300' : 'text-rose-700']] as [$label, $amount, $color])
-                    <div class="px-2 py-1.5 {{ ! $loop->first ? 'border-s '.($royal ? 'border-gold-400/20' : 'border-gold-600/15') : '' }}">
+            <div class="mt-2 grid w-full {{ count($money) === 4 ? 'grid-cols-4' : 'grid-cols-3' }} overflow-hidden rounded-xl border {{ $tile }}">
+                @foreach ($money as [$label, $amount, $color, $sign])
+                    <div class="min-w-0 px-1.5 py-1.5 {{ ! $loop->first ? 'border-s '.($royal ? 'border-gold-400/20' : 'border-gold-600/15') : '' }}">
                         <div class="whitespace-nowrap text-[10.5px] font-bold" style="color:{{ $gold }}">{{ __($label) }}</div>
-                        <div class="whitespace-nowrap font-latin text-[15px] font-bold {{ $color }}">{{ Format::money($amount) }}</div>
+                        <div class="whitespace-nowrap font-latin {{ count($money) === 4 ? 'text-[14px]' : 'text-[15px]' }} font-bold {{ $color }}" dir="ltr" @if (! $color) style="color:{{ $gold }}" @endif>{{ $sign }}{{ Format::money($amount) }}</div>
                     </div>
                 @endforeach
             </div>
@@ -100,7 +106,7 @@
         {{-- notes: always shown --}}
         <div class="mt-2 w-full rounded-xl border {{ $tile }} px-3 py-1.5 text-start">
             <div class="flex items-center gap-1 whitespace-nowrap text-[11px] font-bold" style="color:{{ $gold }}"><x-icon name="notes" class="size-3" stroke="2.2" />{{ __('event.notes') }}</div>
-            <div dir="auto" class="text-start text-[13px] leading-snug {{ $event->notes ? $ink : $soft }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.375em">{{ $event->notes ?: '—' }}</div>
+            <div @if ($event->notes) dir="auto" @endif class="text-start text-[13px] leading-snug {{ $event->notes ? $ink : $soft }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.375em">{{ $event->notes ?: '—' }}</div>
         </div>
 
         {{-- footer: venue location & contact, then the greeting and the date --}}

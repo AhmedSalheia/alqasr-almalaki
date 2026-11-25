@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-04
+
+### Added
+- Morning reservations: any reservation that starts before 14:00 is a morning reservation. Nothing is stored for it — it comes from the start time. Morning reservations get their own dawn-teal colour (theme token `--app-morning`, light and dark) in the month grid, the day view, lists and the details page ("صباحي" tags). The card is unchanged.
+- Calendar filter: "كل الحجوزات" (default), "صباحي" and "مسائي".
+- Discount (خصم) on every reservation: a fixed amount in ₪, not a percentage, 0 by default (reservations saved before 1.2.0 get 0). It is taken off the total before "remaining" is worked out and shows on the details page and the card. The paid amount can't exceed the total after discount.
+
 ## [1.1.0] - 2026-10-25
 
 ### Added

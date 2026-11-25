@@ -63,6 +63,9 @@
     --app-ink-soft: #4a5a72;
     --app-line: rgb(192 124 12 / 0.22);
     --app-accent: #c07c0c;
+    /* Morning reservations: a dawn-sky teal that sits between the navy and the gold */
+    --app-morning: #0f7f99;
+    --app-morning-ink: #ffffff;
     color-scheme: light;
 }
 .dark {
@@ -73,6 +76,8 @@
     --app-ink-soft: #a9b6cb;
     --app-line: rgb(233 176 60 / 0.22);
     --app-accent: #e9b03c;
+    --app-morning: #5cc6dc;
+    --app-morning-ink: #061a22;
     color-scheme: dark;
 }
 
@@ -84,6 +89,8 @@
     --color-ink-soft: var(--app-ink-soft);
     --color-line: var(--app-line);
     --color-accent: var(--app-accent);
+    --color-morning: var(--app-morning);
+    --color-morning-ink: var(--app-morning-ink);
 }
 
 @layer base {

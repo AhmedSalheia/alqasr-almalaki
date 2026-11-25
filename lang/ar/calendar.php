@@ -33,4 +33,5 @@ return [
     'until' => 'حتى',
     'booked' => 'محجوز',
     'free' => 'متاح',
+    'all_reservations' => 'كل الحجوزات',
 ];

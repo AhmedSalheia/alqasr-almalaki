@@ -35,7 +35,7 @@ return [
     'added_by' => 'Added by :name',
     'call' => 'Call',
     'whatsapp' => 'WhatsApp',
-    'paid_more_than_total' => 'The paid amount cannot be more than the total cost.',
+    'paid_more_than_total' => 'The paid amount cannot be more than the total after discount.',
     'same_day_warning' => 'Note: there is already :count reservation(s) on this day.',
     // card
     'card_title' => 'Wedding Reservation',
@@ -57,4 +57,11 @@ return [
     // reminders
     'reminder_title' => 'Reservation in :days days: :name',
     'reminder_hint' => 'Time to confirm the arrangements and make the calls.',
+    'morning' => 'Morning',
+    'evening' => 'Evening',
+    'morning_badge' => 'Morning reservation',
+    'discount' => 'Discount',
+    'discount_hint' => 'fixed amount',
+    'net_cost' => 'Total after discount',
+    'discount_more_than_total' => 'The discount cannot be more than the total cost.',
 ];

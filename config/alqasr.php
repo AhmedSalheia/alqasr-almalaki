@@ -28,6 +28,9 @@ return [
 
     'locales' => ['ar', 'en'],
 
+    // A reservation starting before this time is a morning reservation (own colour and filter).
+    'morning_before' => env('ALQASR_MORNING_BEFORE', '14:00'),
+
     // Defaults for the venue details. Admins change them in Settings (synced to every phone).
     'venue' => [
         'location' => env('ALQASR_VENUE_LOCATION', 'خانيونس - جنوب أبراج طيبة'),

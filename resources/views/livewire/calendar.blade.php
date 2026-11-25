@@ -33,6 +33,18 @@
         </button>
     </div>
 
+    {{-- Filter: all reservations (default), morning (before 14:00) or evening --}}
+    <div class="flex items-center justify-center gap-2">
+        @foreach (['all' => [__('calendar.all_reservations'), null], 'morning' => [__('event.morning'), 'bg-morning'], 'evening' => [__('event.evening'), 'bg-navy-900 dark:bg-gold-500']] as $key => [$label, $dot])
+            <button wire:click="setPeriod('{{ $key }}')" wire:key="period-{{ $key }}"
+                    @class(['inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-bold transition',
+                            'border-gold-500 bg-gold-500/10 text-accent' => $period === $key,
+                            'border-line text-ink-soft' => $period !== $key])>
+                @if ($dot)<span class="size-2.5 rounded-full {{ $dot }}"></span>@endif{{ $label }}
+            </button>
+        @endforeach
+    </div>
+
     @if ($view === 'month')
         {{-- Month grid --}}
         <div class="panel overflow-hidden p-2.5"
@@ -64,7 +76,7 @@
                             </span>
                             <span class="mt-1 flex w-full flex-col items-center gap-0.5">
                                 @foreach ($list->take(2) as $ev)
-                                    <span class="w-[92%] truncate rounded-md bg-navy-900 px-1 py-px text-center font-latin text-[9.5px] font-bold leading-tight text-gold-300 dark:bg-gold-500 dark:text-navy-950" dir="ltr">{{ $ev->start_time }}</span>
+                                    <span class="w-[92%] truncate rounded-md px-1 py-px text-center font-latin text-[9.5px] font-bold leading-tight {{ $ev->isMorning() ? 'bg-morning text-morning-ink' : 'bg-navy-900 text-gold-300 dark:bg-gold-500 dark:text-navy-950' }}" dir="ltr">{{ $ev->start_time }}</span>
                                 @endforeach
                                 @if ($list->count() > 2)
                                     <span class="text-[9.5px] font-bold text-accent">{{ __('calendar.more', ['count' => $list->count() - 2]) }}</span>
@@ -129,10 +141,10 @@
             @endif
             @forelse ($dayEvents as $event)
                 <div class="relative flex items-start gap-3" wire:key="day-{{ $event->id }}">
-                    <div class="z-10 mt-4 grid size-16 shrink-0 place-items-center rounded-full border border-gold-500/40 bg-surface text-center shadow-sm">
+                    <div class="z-10 mt-4 grid size-16 shrink-0 place-items-center rounded-full border bg-surface text-center shadow-sm {{ $event->isMorning() ? 'border-morning/60' : 'border-gold-500/40' }}">
                         <div>
                             <div class="font-latin text-[16px] font-bold leading-none text-ink" dir="ltr">{{ $event->start_time }}</div>
-                            <div class="text-[10px] font-bold text-accent">{{ (int) substr($event->start_time, 0, 2) >= 12 ? __('calendar.pm') : __('calendar.am') }}</div>
+                            <div class="text-[10px] font-bold {{ $event->isMorning() ? 'text-morning' : 'text-accent' }}">{{ $event->isMorning() ? __('event.morning') : ((int) substr($event->start_time, 0, 2) >= 12 ? __('calendar.pm') : __('calendar.am')) }}</div>
                         </div>
                     </div>
                     <div class="min-w-0 flex-1"><x-event-row :event="$event" compact /></div>
